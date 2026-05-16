@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAG-Skeleton 开发日志 - 刘俊贤</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="../index.html" class="nav-logo">刘<span>.</span></a>
+      <div class="nav-links">
+        <a href="../index.html">首页</a>
+        <a href="../projects.html">项目</a>
+        <a href="../blog.html">博客</a>
+        <a href="../poetry.html">诗集</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <article class="article">
+      <h1>RAG-Skeleton 开发日志：从 0 到 1 的踩坑记录</h1>
+      <div class="article-meta">2026-05-10 · 项目记录 · 约 3000 字</div>
+
+      <div class="article-content">
+        <p>这个项目从 4 月中旬开始，到 5 月上旬基本成型。一个多月的时间里，我从完全不懂 RAG 到搭出一套完整的系统，踩了很多坑，也学到了很多东西。这篇文章记录整个过程。</p>
+
+        <h2>Day 1：什么是 RAG？</h2>
+        <p>RAG 的全称是 Retrieval-Augmented Generation（检索增强生成）。通俗理解：用户问一个问题，系统先从知识库里找到相关资料，再把资料塞给大模型，让大模型基于这些资料回答。</p>
+        <p>关键点：大模型不是凭空回答，而是基于你提供的资料回答。这样就不会"一本正经地胡说"。</p>
+
+        <h2>Day 2-4：Embedding + 向量数据库</h2>
+        <p>Embedding 是把文字变成数字向量的技术。比如"小规模纳税人"和"增值税"这两个词，在向量空间里会很接近，因为语义相关。</p>
+        <p>向量数据库（ChromaDB）就是存这些向量的地方。用户提问时，把问题也变成向量，然后在数据库里找最接近的。</p>
+
+        <h2>Day 5-7：混合检索 + Reranker</h2>
+        <p>只用向量检索有一个问题：如果用户输入的关键词和文档里的表述不完全一样，可能找不到。</p>
+        <p>解决方案：向量检索 + BM25 关键词检索双路并行，然后用 QueryFusionRetriever 合并去重。</p>
+        <p>Reranker（重排序）是对检索结果做二次精排，把最相关的排在前面。用的是 bge-reranker-v2-m3 模型。</p>
+
+        <h2>Day 8-14：FastAPI 服务化</h2>
+        <p>最初每问一次问题，都要重新加载模型，耗时 31 秒。解决方案：用 FastAPI 的 lifespan 机制，在进程启动时一次性加载所有模型，后续请求复用。</p>
+        <p>效果：首次启动 ~31 秒，后续问答 < 2 秒。</p>
+
+        <h2>Day 15-20：MCP + Hermes Agent</h2>
+        <p>MCP（Model Context Protocol）是 AI Agent 调用外部工具的标准接口。我把 RAG 的 HTTP 接口封装成 MCP 工具，Hermes Agent 就能自动判断"什么时候该查知识库"。</p>
+        <p>接入微信：用 iLink Bot API，扫码登录，不需要公网 IP。</p>
+
+        <h2>踩坑记录</h2>
+        <ul>
+          <li><strong>API Key 泄露：</strong>第一次 git push 时把 .env 文件传上去了，紧急删库。后来学会了 .gitignore。</li>
+          <li><strong>BM25 索引不一致：</strong>上传新文档时，向量索引增量插入，BM25 全量重建，导致两套索引的节点 ID 不一致。解决方案：统一全量重建。</li>
+          <li><strong>Reranker 内存占用：</strong>bge-reranker-v2-m3 占 2.1GB 内存，小主机跑不动。解决方案：Ollama 离线模式自动跳过 Reranker。</li>
+        </ul>
+
+        <h2>写在最后</h2>
+        <p>一个大一学生能做出这套东西，靠的不是天赋，是每天动手做。每解决一个 Bug，就离目标更近一步。</p>
+      </div>
+    </article>
+  </div>
+
+  <footer>
+    <p> 2026 刘俊贤 · 用代码探索世界</p>
+  </footer>
+</body>
+</html>

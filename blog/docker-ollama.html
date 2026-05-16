@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Docker + Ollama 本地部署实战 - 刘俊贤</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="../index.html" class="nav-logo">刘<span>.</span></a>
+      <div class="nav-links">
+        <a href="../index.html">首页</a>
+        <a href="../projects.html">项目</a>
+        <a href="../blog.html">博客</a>
+        <a href="../poetry.html">诗集</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <article class="article">
+      <h1>Docker + Ollama 本地部署实战</h1>
+      <div class="article-meta">2026-05-05 · 技术教程</div>
+
+      <div class="article-content">
+        <p>很多场景下，我们需要在没有网络的环境下运行大模型。Ollama 让这件事变得简单。这篇文章记录我在 Windows 上部署 Ollama + Qwen2.5 的完整过程。</p>
+
+        <h2>什么是 Ollama？</h2>
+        <p>Ollama 是一个本地运行大模型的工具。它封装了模型下载、加载、推理的全流程，对外提供 OpenAI 兼容的 API。</p>
+
+        <h2>安装 Ollama</h2>
+        <p>Windows 用户直接去 ollama.com 下载安装包，双击安装即可。安装完成后，在终端验证：</p>
+        <pre><code>ollama --version</code></pre>
+
+        <h2>拉取模型</h2>
+        <p>我用的模型是 Qwen2.5:7b，7B 参数，4-bit 量化后约 4GB：</p>
+        <pre><code>ollama pull qwen2.5:7b</code></pre>
+
+        <h2>启动服务</h2>
+        <p>Ollama 默认在后台运行，API 地址是 <code>http://localhost:11434</code>。</p>
+        <p>Python 调用示例：</p>
+        <pre><code>import requests
+
+response = requests.post(
+    "http://localhost:11434/api/generate",
+    json={
+        "model": "qwen2.5:7b",
+        "prompt": "你好",
+        "stream": False
+    }
+)
+print(response.json()["response"])</code></pre>
+
+        <h2>Docker 集成</h2>
+        <p>我的 RAG 项目用 Docker 部署，需要在 Dockerfile 中检测 Ollama 是否可用：</p>
+        <pre><code>import urllib.request
+
+try:
+    req = urllib.request.Request(
+        "http://localhost:11434/api/tags",
+        method="GET"
+    )
+    urllib.request.urlopen(req, timeout=3)
+    use_ollama = True
+except:
+    use_ollama = False</code></pre>
+
+        <h2>内存优化</h2>
+        <p>Qwen2.5:7b 加载后占约 4GB 内存，加上 Reranker 模型 2.1GB，总内存需求约 6-7GB。</p>
+        <p>我的小主机只有 8GB 内存，解决方案：Ollama 模式运行时自动跳过 Reranker，内存占用降到 ~3GB。</p>
+
+        <h2>双模式切换</h2>
+        <p>server.py 启动时自动检测 Ollama 可用性：</p>
+        <ul>
+          <li>Ollama 可用 → 本地运行（零成本，离线可用）</li>
+          <li>Ollama 不可用 → 自动切换到 DeepSeek 云端（质量更高）</li>
+        </ul>
+
+        <h2>总结</h2>
+        <p>Ollama 让本地运行大模型变得极其简单。对于需要离线使用的场景（比赛演示、内部部署），是不可或缺的工具。</p>
+      </div>
+    </article>
+  </div>
+
+  <footer>
+    <p> 2026 刘俊贤 · 用代码探索世界</p>
+  </footer>
+</body>
+</html>

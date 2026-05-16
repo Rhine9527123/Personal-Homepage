@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>项目 - 刘俊贤</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- 导航 -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">刘<span>.</span></a>
+      <div class="nav-links">
+        <a href="index.html">首页</a>
+        <a href="projects.html" class="active">项目</a>
+        <a href="blog.html">博客</a>
+        <a href="poetry.html">诗集</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h1 class="page-title">开源项目</h1>
+    <p class="page-desc">从大一开始独立开发的 AI 应用项目</p>
+
+    <div class="project-grid">
+      <!-- RAG-Skeleton -->
+      <div class="project-card">
+        <div class="project-header">
+          <div class="project-icon">🔍</div>
+          <div class="project-title">RAG-Skeleton</div>
+        </div>
+        <p class="project-desc">
+          基于 Hermes Agent + RAG + 微信的通用 AI 知识库骨架。
+          丢进税务文档就是税务助手，丢进医疗手册就是健康助手。
+          支持混合检索、Reranker 精排、Ollama 离线运行、Docker 一键部署。
+        </p>
+        <div class="project-tags">
+          <span class="project-tag">FastAPI</span>
+          <span class="project-tag">LlamaIndex</span>
+          <span class="project-tag">MCP</span>
+          <span class="project-tag">Docker</span>
+          <span class="project-tag">微信接入</span>
+        </div>
+        <div class="project-links">
+          <a href="https://github.com/Rhine9527123/RAG-skeleton" target="_blank">🔗 GitHub</a>
+        </div>
+      </div>
+
+      <!-- OpenClaw Stock -->
+      <div class="project-card">
+        <div class="project-header">
+          <div class="project-icon">📈</div>
+          <div class="project-title">OpenClaw Stock Assistant</div>
+        </div>
+        <p class="project-desc">
+          低 Token 股票投资晨报自动生成系统。用 Python 算法完成数据采集和技术指标计算，
+          单次晨报仅需 100 tokens，比纯 AI 生成节省 97%。支持飞书推送和定时自动化。
+        </p>
+        <div class="project-tags">
+          <span class="project-tag">Python</span>
+          <span class="project-tag">技术指标</span>
+          <span class="project-tag">飞书 Bot</span>
+          <span class="project-tag">自动化</span>
+        </div>
+        <div class="project-links">
+          <a href="https://github.com/Rhine9527123/OpenClaw-Stock-Assistant" target="_blank">🔗 GitHub</a>
+        </div>
+      </div>
+
+      <!-- Finance Assistant -->
+      <div class="project-card">
+        <div class="project-header">
+          <div class="project-icon">💰</div>
+          <div class="project-title">个体工商户财务助手</div>
+        </div>
+        <p class="project-desc">
+          为个体工商户设计的记账 + 库存管理 + 报表分析工具。
+          基于 Streamlit 的 7 页面前端，SQLite 双数据库，支持飞书推送和 Excel 导出。
+        </p>
+        <div class="project-tags">
+          <span class="project-tag">Streamlit</span>
+          <span class="project-tag">SQLite</span>
+          <span class="project-tag">数据可视化</span>
+        </div>
+        <div class="project-links">
+          <span style="color:var(--text-muted);font-size:0.85rem;">🔒 私有项目</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p> 2026 刘俊贤 · 用代码探索世界</p>
+  </footer>
+</body>
+</html>
