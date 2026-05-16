@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>文件上传 - 刘俊贤</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: #0f0f0f;
+      color: #e0e0e0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      width: 100%;
+      max-width: 600px;
+    }
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 8px;
+      color: #fff;
+    }
+    .subtitle {
+      color: #888;
+      font-size: 0.9rem;
+      margin-bottom: 24px;
+    }
+    .token-box {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+    .token-box label {
+      display: block;
+      font-size: 0.85rem;
+      color: #aaa;
+      margin-bottom: 8px;
+    }
+    .token-box input {
+      width: 100%;
+      padding: 10px 12px;
+      background: #0f0f0f;
+      border: 1px solid #444;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 0.9rem;
+      font-family: monospace;
+    }
+    .token-box input:focus {
+      outline: none;
+      border-color: #6366f1;
+    }
+    .token-hint {
+      font-size: 0.75rem;
+      color: #666;
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+    .drop-zone {
+      border: 2px dashed #444;
+      border-radius: 16px;
+      padding: 60px 20px;
+      text-align: center;
+      transition: all 0.3s;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: #6366f1;
+      background: rgba(99, 102, 241, 0.05);
+    }
+    .drop-zone .icon {
+      font-size: 3rem;
+      margin-bottom: 16px;
+      opacity: 0.6;
+    }
+    .drop-zone p {
+      color: #888;
+      font-size: 0.95rem;
+    }
+    .drop-zone .hint {
+      color: #555;
+      font-size: 0.8rem;
+      margin-top: 8px;
+    }
+    .file-list {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+      display: none;
+    }
+    .file-list.show { display: block; }
+    .file-list h3 {
+      font-size: 0.9rem;
+      color: #aaa;
+      margin-bottom: 12px;
+    }
+    .file-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid #2a2a2a;
+    }
+    .file-item:last-child { border-bottom: none; }
+    .file-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .file-name {
+      font-size: 0.9rem;
+      color: #ddd;
+    }
+    .file-size {
+      font-size: 0.75rem;
+      color: #666;
+    }
+    .file-status {
+      font-size: 0.8rem;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+    .status-pending { color: #888; background: #2a2a2a; }
+    .status-uploading { color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
+    .status-success { color: #10b981; background: rgba(16, 185, 129, 0.1); }
+    .status-error { color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+    .btn {
+      width: 100%;
+      padding: 14px;
+      background: #6366f1;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      display: none;
+    }
+    .btn.show { display: block; }
+    .btn:hover { opacity: 0.9; }
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .log {
+      margin-top: 20px;
+      padding: 16px;
+      background: #1a1a1a;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      color: #888;
+      font-family: monospace;
+      max-height: 200px;
+      overflow-y: auto;
+      display: none;
+    }
+    .log.show { display: block; }
+    .log-entry {
+      margin-bottom: 4px;
+      padding: 2px 0;
+    }
+    .log-success { color: #10b981; }
+    .log-error { color: #ef4444; }
+    .hidden-input { display: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>文件上传</h1>
+    <p class="subtitle">拖拽图片或文档到下方，一键上传到网站</p>
+
+    <div class="token-box">
+      <label>GitHub Token（仅保存在本地浏览器）</label>
+      <input type="password" id="token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" value="">
+      <p class="token-hint">
+        Token 只存在你的浏览器里，不会上传到任何地方。<br>
+        没有 Token 的人无法上传文件。<br>
+        获取方式：GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)
+      </p>
+    </div>
+
+    <div class="drop-zone" id="dropZone">
+      <div class="icon">📁</div>
+      <p>点击或拖拽文件到此处</p>
+      <p class="hint">支持图片、文档等任意文件</p>
+    </div>
+    <input type="file" id="fileInput" class="hidden-input" multiple>
+
+    <div class="file-list" id="fileList">
+      <h3>待上传文件</h3>
+      <div id="fileItems"></div>
+    </div>
+
+    <button class="btn" id="uploadBtn">开始上传</button>
+
+    <div class="log" id="log"></div>
+  </div>
+
+  <script>
+    const GITHUB_OWNER = 'Rhine9527123';
+    const GITHUB_REPO = 'Personal-Homepage';
+    const BRANCH = 'gh-pages';
+
+    const tokenInput = document.getElementById('token');
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const fileList = document.getElementById('fileList');
+    const fileItems = document.getElementById('fileItems');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const log = document.getElementById('log');
+
+    let files = [];
+
+    // 从 localStorage 读取 Token
+    const savedToken = localStorage.getItem('github_token');
+    if (savedToken) tokenInput.value = savedToken;
+
+    tokenInput.addEventListener('change', () => {
+      localStorage.setItem('github_token', tokenInput.value);
+    });
+
+    function addLog(msg, type) {
+      log.classList.add('show');
+      const entry = document.createElement('div');
+      entry.className = 'log-entry' + (type ? ' log-' + type : '');
+      entry.textContent = '[' + new Date().toLocaleTimeString() + '] ' + msg;
+      log.appendChild(entry);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    function formatSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    function renderFiles() {
+      if (files.length === 0) {
+        fileList.classList.remove('show');
+        uploadBtn.classList.remove('show');
+        return;
+      }
+      fileList.classList.add('show');
+      uploadBtn.classList.add('show');
+      fileItems.innerHTML = '';
+      files.forEach((f, i) => {
+        const item = document.createElement('div');
+        item.className = 'file-item';
+        item.innerHTML = `
+          <div class="file-info">
+            <span class="file-name">${f.file.name}</span>
+            <span class="file-size">${formatSize(f.file.size)}</span>
+          </div>
+          <span class="file-status status-${f.status}">${f.label}</span>
+        `;
+        fileItems.appendChild(item);
+      });
+    }
+
+    function addFiles(newFiles) {
+      newFiles.forEach(file => {
+        // 检查是否已存在
+        const exists = files.some(f => f.file.name === file.name && f.file.size === file.size);
+        if (!exists) {
+          files.push({ file, status: 'pending', label: '等待上传' });
+        }
+      });
+      renderFiles();
+    }
+
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      addFiles(Array.from(e.dataTransfer.files));
+    });
+
+    fileInput.addEventListener('change', () => {
+      addFiles(Array.from(fileInput.files));
+      fileInput.value = '';
+    });
+
+    async function uploadFile(fileObj, index) {
+      const token = tokenInput.value.trim();
+      if (!token) {
+        addLog('错误：请先填写 GitHub Token', 'error');
+        return false;
+      }
+
+      fileObj.status = 'uploading';
+      fileObj.label = '上传中...';
+      renderFiles();
+
+      const reader = new FileReader();
+      const content = await new Promise((resolve) => {
+        reader.onload = (e) => resolve(btoa(e.target.result));
+        reader.readAsBinaryString(fileObj.file);
+      });
+
+      const path = fileObj.file.name;
+
+      try {
+        // 先检查文件是否已存在
+        let sha = null;
+        try {
+          const checkRes = await fetch(
+            `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}?ref=${BRANCH}`,
+            { headers: { 'Authorization': 'token ' + token } }
+          );
+          if (checkRes.status === 200) {
+            const data = await checkRes.json();
+            sha = data.sha;
+          }
+        } catch (e) {}
+
+        const body = {
+          message: 'Upload ' + path,
+          content: content,
+          branch: BRANCH
+        };
+        if (sha) body.sha = sha;
+
+        const res = await fetch(
+          `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`,
+          {
+            method: 'PUT',
+            headers: {
+              'Authorization': 'token ' + token,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+          }
+        );
+
+        if (res.status === 200 || res.status === 201) {
+          fileObj.status = 'success';
+          fileObj.label = '完成';
+          addLog('✓ ' + path, 'success');
+          return true;
+        } else {
+          const err = await res.json();
+          fileObj.status = 'error';
+          fileObj.label = '失败';
+          addLog('✗ ' + path + ': ' + (err.message || '未知错误'), 'error');
+          return false;
+        }
+      } catch (err) {
+        fileObj.status = 'error';
+        fileObj.label = '失败';
+        addLog('✗ ' + path + ': ' + err.message, 'error');
+        return false;
+      }
+    }
+
+    uploadBtn.addEventListener('click', async () => {
+      const token = tokenInput.value.trim();
+      if (!token) {
+        alert('请先填写 GitHub Token');
+        return;
+      }
+
+      uploadBtn.disabled = true;
+      uploadBtn.textContent = '上传中...';
+      addLog('开始上传 ' + files.length + ' 个文件');
+
+      for (let i = 0; i < files.length; i++) {
+        await uploadFile(files[i], i);
+        renderFiles();
+      }
+
+      addLog('上传完成');
+      uploadBtn.disabled = false;
+      uploadBtn.textContent = '开始上传';
+      files = [];
+      setTimeout(() => {
+        fileList.classList.remove('show');
+        uploadBtn.classList.remove('show');
+      }, 3000);
+    });
+  </script>
+</body>
+</html>
