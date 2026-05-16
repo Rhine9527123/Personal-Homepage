@@ -172,12 +172,86 @@
     .log-success { color: #10b981; }
     .log-error { color: #ef4444; }
     .hidden-input { display: none; }
+
+    /* 文章发布样式 */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .tab {
+      flex: 1;
+      padding: 12px;
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 10px;
+      color: #888;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    .tab.active {
+      background: #6366f1;
+      color: #fff;
+      border-color: #6366f1;
+    }
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      color: #aaa;
+      margin-bottom: 6px;
+    }
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 10px 12px;
+      background: #0f0f0f;
+      border: 1px solid #444;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 0.9rem;
+      font-family: inherit;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #6366f1;
+    }
+    .form-group textarea {
+      min-height: 200px;
+      resize: vertical;
+      line-height: 1.8;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .hint-text {
+      font-size: 0.75rem;
+      color: #666;
+      margin-top: 6px;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>文件上传</h1>
-    <p class="subtitle">拖拽图片或文档到下方，一键上传到网站</p>
+    <h1>内容管理</h1>
+    <p class="subtitle">上传文件或发布文章，一键更新网站</p>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="file">📁 文件上传</div>
+      <div class="tab" data-tab="blog">📝 发布博客</div>
+      <div class="tab" data-tab="poetry">✍️ 发布诗集</div>
+    </div>
 
     <div class="token-box">
       <label>GitHub Token（仅保存在本地浏览器）</label>
@@ -202,6 +276,65 @@
     </div>
 
     <button class="btn" id="uploadBtn">开始上传</button>
+
+    <!-- 博客发布面板 -->
+    <div class="panel" id="blogPanel">
+      <div class="form-group">
+        <label>文章标题</label>
+        <input type="text" id="blogTitle" placeholder="输入文章标题">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>日期</label>
+          <input type="date" id="blogDate">
+        </div>
+        <div class="form-group">
+          <label>分类</label>
+          <input type="text" id="blogCategory" placeholder="如：技术教程">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>文章摘要（列表页显示）</label>
+        <input type="text" id="blogDesc" placeholder="一两句话概括文章内容">
+      </div>
+      <div class="form-group">
+        <label>正文内容（支持 HTML）</label>
+        <textarea id="blogContent" placeholder="<p>第一段内容</p>
+<p>第二段内容</p>
+
+<h2>小标题</h2>
+<p>更多内容...</p>
+
+<pre><code>代码块</code></pre>
+
+<blockquote>引用内容</blockquote>"></textarea>
+        <p class="hint-text">提示：用 &lt;p&gt; 包裹段落，&lt;h2&gt; 是小标题，&lt;pre&gt;&lt;code&gt; 是代码块，&lt;blockquote&gt; 是引用</p>
+      </div>
+      <button class="btn show" id="publishBlogBtn">发布博客</button>
+    </div>
+
+    <!-- 诗集发布面板 -->
+    <div class="panel" id="poetryPanel">
+      <div class="form-group">
+        <label>诗的标题</label>
+        <input type="text" id="poetryTitle" placeholder="输入诗的标题">
+      </div>
+      <div class="form-group">
+        <label>日期</label>
+        <input type="month" id="poetryDate">
+      </div>
+      <div class="form-group">
+        <label>正文内容</label>
+        <textarea id="poetryContent" placeholder="第一行
+第二行
+第三行
+
+空一行表示分段
+继续写..."></textarea>
+        <p class="hint-text">换行即换行，空一行表示分段</p>
+      </div>
+      <button class="btn show" id="publishPoetryBtn">发布诗集</button>
+    </div>
 
     <div class="log" id="log"></div>
   </div>
@@ -396,6 +529,210 @@
         fileList.classList.remove('show');
         uploadBtn.classList.remove('show');
       }, 3000);
+    });
+
+    // ========== 标签切换 ==========
+    const tabs = document.querySelectorAll('.tab');
+    const panels = document.querySelectorAll('.panel');
+    const dropZoneEl = document.getElementById('dropZone');
+    const fileInputEl = document.getElementById('fileInput');
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const target = tab.dataset.tab;
+
+        if (target === 'file') {
+          panels.forEach(p => p.classList.remove('active'));
+          dropZoneEl.style.display = 'block';
+          fileInputEl.style.display = 'none';
+        } else {
+          panels.forEach(p => p.classList.remove('active'));
+          document.getElementById(target + 'Panel').classList.add('active');
+          dropZoneEl.style.display = 'none';
+          fileInputEl.style.display = 'none';
+        }
+      });
+    });
+
+    // 设置默认日期
+    document.getElementById('blogDate').valueAsDate = new Date();
+    document.getElementById('poetryDate').value = new Date().toISOString().slice(0, 7);
+
+    // ========== 通用：获取/更新文件内容 ==========
+    async function getFileContent(path, token) {
+      try {
+        const res = await fetch(
+          `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}?ref=${BRANCH}`,
+          { headers: { 'Authorization': 'token ' + token } }
+        );
+        if (res.status === 200) {
+          const data = await res.json();
+          return { content: atob(data.content.replace(/\n/g, '')), sha: data.sha };
+        }
+      } catch (e) {}
+      return null;
+    }
+
+    async function updateFile(path, content, message, token) {
+      const existing = await getFileContent(path, token);
+      const body = {
+        message: message,
+        content: btoa(unescape(encodeURIComponent(content))),
+        branch: BRANCH
+      };
+      if (existing) body.sha = existing.sha;
+
+      const res = await fetch(
+        `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Authorization': 'token ' + token,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(body)
+        }
+      );
+      return res.status === 200 || res.status === 201;
+    }
+
+    // ========== 发布博客 ==========
+    document.getElementById('publishBlogBtn').addEventListener('click', async () => {
+      const token = tokenInput.value.trim();
+      if (!token) { alert('请先填写 GitHub Token'); return; }
+
+      const title = document.getElementById('blogTitle').value.trim();
+      const date = document.getElementById('blogDate').value;
+      const category = document.getElementById('blogCategory').value.trim() || '随笔';
+      const desc = document.getElementById('blogDesc').value.trim();
+      const content = document.getElementById('blogContent').value.trim();
+
+      if (!title || !content) { alert('请填写标题和正文'); return; }
+
+      const btn = document.getElementById('publishBlogBtn');
+      btn.disabled = true;
+      btn.textContent = '发布中...';
+      addLog('开始发布博客：' + title);
+
+      // 生成文件名
+      const slug = title.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') || 'post';
+      const filename = 'blog/' + slug + '.html';
+
+      // 生成文章页 HTML
+      const articleHtml = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${title} - 刘俊贤</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="../index.html" class="nav-logo">刘<span>.</span></a>
+      <div class="nav-links">
+        <a href="../index.html">首页</a>
+        <a href="../projects.html">项目</a>
+        <a href="../blog.html" class="active">博客</a>
+        <a href="../poetry.html">诗集</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <article class="article">
+      <h1>${title}</h1>
+      <div class="article-meta">${date} · ${category}</div>
+      <div class="article-content">
+${content}
+      </div>
+    </article>
+  </div>
+
+  <footer>
+    <p> 2026 刘俊贤 · 用代码探索世界</p>
+  </footer>
+</body>
+</html>`;
+
+      // 上传文章页
+      const ok1 = await updateFile(filename, articleHtml, '发布博客：' + title, token);
+      if (!ok1) { addLog('✗ 文章页上传失败', 'error'); btn.disabled = false; btn.textContent = '发布博客'; return; }
+      addLog('✓ 文章页已创建', 'success');
+
+      // 更新 blog.html 列表
+      const blogPage = await getFileContent('blog.html', token);
+      if (!blogPage) { addLog('✗ 无法读取 blog.html', 'error'); btn.disabled = false; btn.textContent = '发布博客'; return; }
+
+      const listItem = `      <a href="${filename}" class="blog-item">
+        <div class="blog-item-title">${title}</div>
+        <div class="blog-item-meta">${date} · ${category}</div>
+        <div class="blog-item-desc">${desc || title}</div>
+      </a>
+`;
+      const insertMarker = '    <div class="blog-list">';
+      const newBlogContent = blogPage.content.replace(insertMarker, insertMarker + '\n' + listItem);
+
+      const ok2 = await updateFile('blog.html', newBlogContent, '更新博客列表：' + title, token);
+      if (ok2) {
+        addLog('✓ 博客列表已更新', 'success');
+        addLog('发布完成！1-2 分钟后刷新网站查看', 'success');
+        // 清空表单
+        document.getElementById('blogTitle').value = '';
+        document.getElementById('blogDesc').value = '';
+        document.getElementById('blogContent').value = '';
+      } else {
+        addLog('✗ 博客列表更新失败', 'error');
+      }
+
+      btn.disabled = false;
+      btn.textContent = '发布博客';
+    });
+
+    // ========== 发布诗集 ==========
+    document.getElementById('publishPoetryBtn').addEventListener('click', async () => {
+      const token = tokenInput.value.trim();
+      if (!token) { alert('请先填写 GitHub Token'); return; }
+
+      const title = document.getElementById('poetryTitle').value.trim();
+      const date = document.getElementById('poetryDate').value;
+      const content = document.getElementById('poetryContent').value.trim();
+
+      if (!title || !content) { alert('请填写标题和正文'); return; }
+
+      const btn = document.getElementById('publishPoetryBtn');
+      btn.disabled = true;
+      btn.textContent = '发布中...';
+      addLog('开始发布诗集：' + title);
+
+      // 更新 poetry.html
+      const poetryPage = await getFileContent('poetry.html', token);
+      if (!poetryPage) { addLog('✗ 无法读取 poetry.html', 'error'); btn.disabled = false; btn.textContent = '发布诗集'; return; }
+
+      const cardHtml = `      <div class="poetry-card">
+        <div class="poetry-title">${title}</div>
+        <div class="poetry-date">${date}</div>
+        <div class="poetry-content">${content.replace(/\n/g, '\n')}</div>
+      </div>
+`;
+      const insertMarker = '    <div class="poetry-list">';
+      const newPoetryContent = poetryPage.content.replace(insertMarker, insertMarker + '\n' + cardHtml);
+
+      const ok = await updateFile('poetry.html', newPoetryContent, '发布诗集：' + title, token);
+      if (ok) {
+        addLog('✓ 诗集已发布', 'success');
+        addLog('发布完成！1-2 分钟后刷新网站查看', 'success');
+        document.getElementById('poetryTitle').value = '';
+        document.getElementById('poetryContent').value = '';
+      } else {
+        addLog('✗ 诗集发布失败', 'error');
+      }
+
+      btn.disabled = false;
+      btn.textContent = '发布诗集';
     });
   </script>
 </body>
