@@ -3,19 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>我是怎么靠 AI 学会 RAG 的 - 刘俊贤</title>
+  <title>我是怎么靠 AI 学会 RAG 的 - Rhine</title>
   <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
   <nav class="nav">
     <div class="nav-inner">
-      <a href="../index.html" class="nav-logo">刘<span>.</span></a>
+      <a href="../index.html" class="nav-logo">Rhine<span>.</span></a>
       <div class="nav-links">
         <a href="../index.html">首页</a>
         <a href="../projects.html">项目</a>
         <a href="../blog.html">博客</a>
         <a href="../poetry.html">诗集</a>
+        <a href="../about.html">关于我</a>
       </div>
+      <div class="clock" id="clock">--:--:--</div>
     </div>
   </nav>
 
@@ -25,46 +27,53 @@
       <div class="article-meta">2026-05-08 · 学习方法</div>
 
       <div class="article-content">
-        <p>四个月前，我对 RAG 一无所知。四个月后，我搭出了一套完整的 RAG 系统。这篇文章分享我的学习方法，适合想自学技术但不知道怎么开始的人。</p>
+        <p>我是一名深圳信息职业技术大学的大一学生，读工业互联网专业。作为互联网专业的学生，AI 早已成了日常的一部分——生活琐事、作业难题，第一反应都是问问 AI。AI 像水电一样普及，有人靠它实现了自我成长，有人赶上了时代红利，但也有不少人只是把 AI 当成了一个高级聊天机器人。我想用自己的经历聊聊：怎么靠 AI 把脑子里的蓝图变成实际跑起来的项目。</p>
 
-        <h2>第一步：先跑通，再理解</h2>
-        <p>很多人学新技术的方式是先看文档、看教程，试图"完全理解"后再动手。我的经验是：先跑起来，再回头看原理。</p>
-        <p>第一天我就找了个最简单的 RAG Demo，复制粘贴代码，让它跑起来。看到它能回答问题的那一刻，我对 RAG 有了直观的理解。这比看十篇文档都有效。</p>
+        <h2>梦开始的地方：OpenClaw 本地部署</h2>
+        <p>2026 年 3 月，OpenClaw 爆火，加上老师的介绍，我开始了本地化部署的尝试。肯定有人问：为什么不云端一键部署？我的回答是——我想先挑战一下自己。</p>
+        <p>一开始我在 B 站看教程，视频里步骤简单又快速，结果上手完全不是那么回事。各种报错纷至沓来：API rate limited、402 报错、网关配置、飞书配置……这些问题视频里根本没提。这时候我开始靠 AI 排查 bug、找解决办法。一开始只用豆包，但发现它给的方法有时完全不可行，甚至把本来没问题的功能搞坏了。后来我同时打开千问，把同一个问题丢给两个模型，再把两份答案交叉验证——高度重合的部分直接照做，有分歧的地方继续追问。相当于让两个 AI 相互印证，避免过度依赖单一模型的局限性。</p>
 
-        <h2>第二步：每天一个小目标</h2>
-        <p>我把整个项目拆成 7 天：</p>
+        <h2>最大的蜕变：RAG-Skeleton 项目</h2>
+        <p>真正让我脱胎换骨的，是后来做 RAG-Skeleton 的时候。RAG 是近几年的新技术，作为初学者我完全不知道从哪下手。于是我让 WorkBuddy（腾讯的 AI）帮我规划了学习 RAG 的日程。</p>
+        <p>这里要提醒刚开始用 AI 做项目的同学：千万别让 AI 一股脑生成代码，然后自己对着屏幕"拔剑四顾心茫然"。这个坑我踩过。我们要做的是"使用 AI"，而不是"被 AI 使用"。无脑复制粘贴不仅学不到东西，反而会让你对 AI 产生依赖，离开它就不会写了。</p>
+        <p>我的学习计划分成了五步：</p>
         <ul>
-          <li>Day 1：跑通基础 RAG</li>
-          <li>Day 2：元数据过滤</li>
-          <li>Day 3：混合检索</li>
-          <li>Day 4：Reranker</li>
-          <li>Day 5-6：FastAPI 服务化</li>
-          <li>Day 7：前端对接</li>
+          <li><strong>理解核心</strong>：RAG 的功能和流程是什么</li>
+          <li><strong>读懂代码</strong>：关键函数的作用和核心逻辑</li>
+          <li><strong>每日复习</strong>：AI 出题，巩固当天所学</li>
+          <li><strong>手写笔记</strong>：用自己的话复述，检验理解程度</li>
+          <li><strong>跑通全流程</strong>：把零散知识串成闭环</li>
         </ul>
-        <p>每天只做一件事，做完就停。这样不会因为任务太多而焦虑，也不会因为一天没做完就放弃。</p>
+        <p>第一天，AI 生成了一段很简单的代码，让我先理解 RAG 的基本概念。我的主观感受是：脑袋空空，好像什么都没学到。但这非常正常。跟着 AI 规划的方向一步一步走，你会经历从"茫然"到"顿悟"的蜕变。</p>
+        <p>接下来几天，我系统学习了 RAG 的核心概念：元数据过滤的作用是什么，过滤不当会怎样；Top-K 调参里 K 值大小对答案生成的影响；BM25 和向量检索的区别；为什么要用混合检索 + Reranker；FastAPI 在这套架构里扮演什么角色……在 AI 的带领下，不知不觉就由浅入深。最重要的是每天让 AI 出题复习，这样知识才能真正扎实。</p>
 
-        <h2>第三步：用 AI 当助教</h2>
-        <p>遇到 Bug 时，我不会直接让 AI 帮我修好，而是让它解释：</p>
-        <ul>
-          <li>"这个错误是什么意思？"</li>
-          <li>"这段代码的逻辑是什么？"</li>
-          <li>"为什么会报这个错？"</li>
-        </ul>
-        <p>理解了原理后，我自己动手修。这样修完一次，下次遇到类似问题就会了。</p>
+        <h2>我的学习心法：不求写代码，只求懂原理</h2>
+        <p>我靠 AI 学习时，并没有死磕编程细节，而是让 AI 把代码写好，然后我去理解关键函数的作用和核心流程。接着自己上手改几个参数，观察运行效果的变化——这种"失之毫厘，差之千里"的体感，比看十遍文档都管用。比如 Top-K 调参，把 K 值放大或缩小，答案质量的变化立竿见影；修改 Chunking 策略里的 chunk_size 和 chunk_overlap，也能直观感受到对检索结果的影响。</p>
 
-        <h2>第四步：写学习日志</h2>
-        <p>每天学完都写一段笔记，记录今天学了什么、踩了什么坑、怎么解决的。这些笔记后来变成了我的博客素材。</p>
-
-        <h2>关键心得</h2>
+        <h2>写在最后</h2>
         <blockquote>
-          最好的学习方式不是"学会"，而是"做出东西"。当你做出一个能用的东西时，所有零散的知识点会自动串联起来。
+          在我看来，AI 是一位功能强大且极度耐心的老师。它会根据你的学习情况实时调整节奏，你有任何问题都可以随时追问。如果你现在还不知道第一步该往哪走，不妨先问自己一个问题：我真的会用 AI 吗？
         </blockquote>
+        <p>希望这篇博客对你有所帮助，感谢阅读！</p>
       </div>
     </article>
   </div>
 
   <footer>
-    <p> 2026 刘俊贤 · 用代码探索世界</p>
+    <p> 2026 Rhine · Logic Junction X</p>
   </footer>
+
+  <script>
+    function updateClock() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      const dateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+      document.getElementById('clock').textContent = dateStr + ' ' + hours + ':' + minutes + ':' + seconds;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+  </script>
 </body>
 </html>
