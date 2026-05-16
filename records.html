@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>记录 - Rhine</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .records-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+    .record-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      transition: all 0.35s ease;
+      cursor: pointer;
+    }
+    .record-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-hover);
+      border-color: rgba(37, 99, 235, 0.2);
+    }
+    .record-img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      display: block;
+      background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+    }
+    .record-info {
+      padding: 1.25rem;
+    }
+    .record-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+    }
+    .record-meta {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 0.6rem;
+    }
+    .record-desc {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+    .record-tag {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 6px;
+      background: rgba(37, 99, 235, 0.06);
+      color: var(--accent);
+      font-size: 0.75rem;
+      font-weight: 500;
+      margin-top: 0.75rem;
+    }
+    .record-tag.notes { background: rgba(37, 99, 235, 0.06); color: var(--accent); }
+    .record-tag.runtime { background: rgba(16, 185, 129, 0.06); color: #10b981; }
+
+    /* 图片查看器 */
+    .lightbox {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .lightbox.active { display: flex; }
+    .lightbox img {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+    .lightbox-close {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      font-size: 2rem;
+      color: #fff;
+      cursor: pointer;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+    .lightbox-close:hover { opacity: 1; }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">Rhine<span>.</span></a>
+      <div class="nav-links">
+        <a href="index.html">首页</a>
+        <a href="projects.html">项目</a>
+        <a href="blog.html">博客</a>
+        <a href="poetry.html">诗集</a>
+        <a href="records.html" class="active">记录</a>
+        <a href="about.html">关于我</a>
+      </div>
+      <div class="clock" id="clock">--:--:--</div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h1 class="page-title">记录</h1>
+    <p class="page-desc">学习 RAG 过程中的手写笔记和运行记录</p>
+
+    <div class="records-grid">
+      <!-- 手写笔记示例 -->
+      <div class="record-card" onclick="openLightbox('img/records/note-1.jpg', 'Day 1 笔记 - RAG 基础概念')">
+        <img class="record-img" src="img/records/note-1.jpg" alt="笔记" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="record-img" style="display:none;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.9rem;">
+          📷 图片占位
+        </div>
+        <div class="record-info">
+          <div class="record-title">Day 1 笔记</div>
+          <div class="record-meta">2026-04-15 · RAG 基础</div>
+          <div class="record-desc">RAG 的核心流程：检索 → 增强 → 生成</div>
+          <span class="record-tag notes">手写笔记</span>
+        </div>
+      </div>
+
+      <!-- 运行记录示例 -->
+      <div class="record-card" onclick="openLightbox('img/records/run-1.jpg', 'Day 1 运行结果 - 第一个 RAG Demo')">
+        <img class="record-img" src="img/records/run-1.jpg" alt="运行记录" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="record-img" style="display:none;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.9rem;">
+          📷 图片占位
+        </div>
+        <div class="record-info">
+          <div class="record-title">Day 1 运行结果</div>
+          <div class="record-meta">2026-04-15 · 首次跑通</div>
+          <div class="record-desc">第一个 RAG Demo 成功运行，能回答问题了</div>
+          <span class="record-tag runtime">运行记录</span>
+        </div>
+      </div>
+
+      <!-- 手写笔记示例 -->
+      <div class="record-card" onclick="openLightbox('img/records/note-2.jpg', 'Day 2 笔记 - 元数据过滤')">
+        <img class="record-img" src="img/records/note-2.jpg" alt="笔记" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="record-img" style="display:none;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.9rem;">
+          📷 图片占位
+        </div>
+        <div class="record-info">
+          <div class="record-title">Day 2 笔记</div>
+          <div class="record-meta">2026-04-16 · 元数据过滤</div>
+          <div class="record-desc">metadata 的作用和过滤不当的后果</div>
+          <span class="record-tag notes">手写笔记</span>
+        </div>
+      </div>
+
+      <!-- 运行记录示例 -->
+      <div class="record-card" onclick="openLightbox('img/records/run-2.jpg', 'Day 3 运行 - 混合检索对比')">
+        <img class="record-img" src="img/records/run-2.jpg" alt="运行记录" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="record-img" style="display:none;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.9rem;">
+          📷 图片占位
+        </div>
+        <div class="record-info">
+          <div class="record-title">Day 3 运行对比</div>
+          <div class="record-meta">2026-04-17 · 混合检索</div>
+          <div class="record-desc">向量检索 vs BM25 的效果对比实验</div>
+          <span class="record-tag runtime">运行记录</span>
+        </div>
+      </div>
+
+      <!-- 手写笔记示例 -->
+      <div class="record-card" onclick="openLightbox('img/records/note-3.jpg', 'Day 4 笔记 - Reranker 原理')">
+        <img class="record-img" src="img/records/note-3.jpg" alt="笔记" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="record-img" style="display:none;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.9rem;">
+          📷 图片占位
+        </div>
+        <div class="record-info">
+          <div class="record-title">Day 4 笔记</div>
+          <div class="record-meta">2026-04-18 · Reranker</div>
+          <div class="record-desc">CrossEncoder 重排序的工作原理和调参</div>
+          <span class="record-tag notes">手写笔记</span>
+        </div>
+      </div>
+
+      <!-- 运行记录示例 -->
+      <div class="record-card" onclick="openLightbox('img/records/run-3.jpg', 'Day 5 运行 - FastAPI 服务化')">
+        <img class="record-img" src="img/records/run-3.jpg" alt="运行记录" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="record-img" style="display:none;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.9rem;">
+          📷 图片占位
+        </div>
+        <div class="record-info">
+          <div class="record-title">Day 5 运行</div>
+          <div class="record-meta">2026-04-19 · FastAPI</div>
+          <div class="record-desc">RAG 服务化封装，API 接口测试通过</div>
+          <span class="record-tag runtime">运行记录</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 添加记录说明 -->
+    <div style="margin-top: 3rem; padding: 1.5rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); text-align: center; color: var(--text-muted); font-size: 0.9rem;">
+      💡 将图片放入 <code style="background:#f1f5f9;padding:0.2rem 0.5rem;border-radius:4px;">img/records/</code> 文件夹即可展示。支持手写笔记和运行记录截图。
+    </div>
+  </div>
+
+  <!-- 图片查看器 -->
+  <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <span class="lightbox-close">&times;</span>
+    <img id="lightbox-img" src="" alt="">
+  </div>
+
+  <footer>
+    <p> 2026 Rhine · Logic Junction X</p>
+  </footer>
+
+  <script>
+    function updateClock() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      const dateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+      document.getElementById('clock').textContent = dateStr + ' ' + hours + ':' + minutes + ':' + seconds;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    function openLightbox(src, alt) {
+      document.getElementById('lightbox-img').src = src;
+      document.getElementById('lightbox-img').alt = alt;
+      document.getElementById('lightbox').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeLightbox() {
+      document.getElementById('lightbox').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeLightbox();
+    });
+  </script>
+</body>
+</html>
