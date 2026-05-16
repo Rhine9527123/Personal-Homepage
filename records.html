@@ -112,97 +112,160 @@
 
   <div class="container">
     <h1 class="page-title">记录</h1>
-    <p class="page-desc">学习 RAG 过程中的手写笔记和运行记录</p>
+    <p class="page-desc">学习过程中的手写笔记和运行截图</p>
 
-    <div class="records-grid">
-      <!-- 手写笔记示例 -->
-      <div class="record-card" onclick="openLightbox('img/records/note-1.jpg', 'Day 1 笔记 - RAG 基础概念')">
-        <img class="record-img" src="img/records/note-1.jpg" alt="笔记" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="record-img" style="display:none;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.9rem;">
-          📷 图片占位
-        </div>
-        <div class="record-info">
-          <div class="record-title">Day 1 笔记</div>
-          <div class="record-meta">2026-04-15 · RAG 基础</div>
-          <div class="record-desc">RAG 的核心流程：检索 → 增强 → 生成</div>
-          <span class="record-tag notes">手写笔记</span>
-        </div>
-      </div>
-
-      <!-- 运行记录示例 -->
-      <div class="record-card" onclick="openLightbox('img/records/run-1.jpg', 'Day 1 运行结果 - 第一个 RAG Demo')">
-        <img class="record-img" src="img/records/run-1.jpg" alt="运行记录" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="record-img" style="display:none;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.9rem;">
-          📷 图片占位
-        </div>
-        <div class="record-info">
-          <div class="record-title">Day 1 运行结果</div>
-          <div class="record-meta">2026-04-15 · 首次跑通</div>
-          <div class="record-desc">第一个 RAG Demo 成功运行，能回答问题了</div>
-          <span class="record-tag runtime">运行记录</span>
-        </div>
-      </div>
-
-      <!-- 手写笔记示例 -->
-      <div class="record-card" onclick="openLightbox('img/records/note-2.jpg', 'Day 2 笔记 - 元数据过滤')">
-        <img class="record-img" src="img/records/note-2.jpg" alt="笔记" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="record-img" style="display:none;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.9rem;">
-          📷 图片占位
-        </div>
-        <div class="record-info">
-          <div class="record-title">Day 2 笔记</div>
-          <div class="record-meta">2026-04-16 · 元数据过滤</div>
-          <div class="record-desc">metadata 的作用和过滤不当的后果</div>
-          <span class="record-tag notes">手写笔记</span>
-        </div>
-      </div>
-
-      <!-- 运行记录示例 -->
-      <div class="record-card" onclick="openLightbox('img/records/run-2.jpg', 'Day 3 运行 - 混合检索对比')">
-        <img class="record-img" src="img/records/run-2.jpg" alt="运行记录" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="record-img" style="display:none;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.9rem;">
-          📷 图片占位
-        </div>
-        <div class="record-info">
-          <div class="record-title">Day 3 运行对比</div>
-          <div class="record-meta">2026-04-17 · 混合检索</div>
-          <div class="record-desc">向量检索 vs BM25 的效果对比实验</div>
-          <span class="record-tag runtime">运行记录</span>
-        </div>
-      </div>
-
-      <!-- 手写笔记示例 -->
-      <div class="record-card" onclick="openLightbox('img/records/note-3.jpg', 'Day 4 笔记 - Reranker 原理')">
-        <img class="record-img" src="img/records/note-3.jpg" alt="笔记" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="record-img" style="display:none;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.9rem;">
-          📷 图片占位
-        </div>
-        <div class="record-info">
-          <div class="record-title">Day 4 笔记</div>
-          <div class="record-meta">2026-04-18 · Reranker</div>
-          <div class="record-desc">CrossEncoder 重排序的工作原理和调参</div>
-          <span class="record-tag notes">手写笔记</span>
-        </div>
-      </div>
-
-      <!-- 运行记录示例 -->
-      <div class="record-card" onclick="openLightbox('img/records/run-3.jpg', 'Day 5 运行 - FastAPI 服务化')">
-        <img class="record-img" src="img/records/run-3.jpg" alt="运行记录" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="record-img" style="display:none;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.9rem;">
-          📷 图片占位
-        </div>
-        <div class="record-info">
-          <div class="record-title">Day 5 运行</div>
-          <div class="record-meta">2026-04-19 · FastAPI</div>
-          <div class="record-desc">RAG 服务化封装，API 接口测试通过</div>
-          <span class="record-tag runtime">运行记录</span>
-        </div>
-      </div>
+    <!-- RAG学习手写笔记专题栏 -->
+    <div style="margin-bottom: 2rem;">
+      <h2 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+        <span style="display:inline-block;width:4px;height:1.3rem;background:linear-gradient(180deg,var(--accent),var(--accent-2));border-radius:2px;"></span>
+        RAG 学习手写笔记
+      </h2>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">从零学习 RAG 技术过程中的手写笔记，涵盖 Embedding、混合检索、Reranker、FastAPI、Docker、MCP 等核心知识点</p>
     </div>
 
-    <!-- 添加记录说明 -->
-    <div style="margin-top: 3rem; padding: 1.5rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); text-align: center; color: var(--text-muted); font-size: 0.9rem;">
-      💡 将图片放入 <code style="background:#f1f5f9;padding:0.2rem 0.5rem;border-radius:4px;">img/records/</code> 文件夹即可展示。支持手写笔记和运行记录截图。
+    <div class="records-grid">
+      <!-- 笔记 01 -->
+      <div class="record-card" onclick="openLightbox('img/records/note-01.jpg', 'RAG 学习笔记 01')">
+        <img class="record-img" src="img/records/note-01.jpg" alt="RAG 笔记 01" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="record-img" style="display:none;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.9rem;">📷 笔记 01</div>
+        <div class="record-info">
+          <div class="record-title">笔记 01</div>
+          <div class="record-meta">RAG 基础概念</div>
+          <span class="record-tag notes">手写笔记</span>
+        </div>
+      </div>
+
+      <!-- 笔记 02 -->
+      <div class="record-card" onclick="openLightbox('img/records/note-02.jpg', 'RAG 学习笔记 02')">
+        <img class="record-img" src="img/records/note-02.jpg" alt="RAG 笔记 02" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="record-img" style="display:none;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.9rem;">📷 笔记 02</div>
+        <div class="record-info">
+          <div class="record-title">笔记 02</div>
+          <div class="record-meta">Kimi API & RAG 流程</div>
+          <span class="record-tag notes">手写笔记</span>
+        </div>
+      </div>
+
+      <!-- 笔记 03 -->
+      <div class="record-card" onclick="openLightbox('img/records/note-03.jpg', 'RAG 学习笔记 03')">
+        <img class="record-img" src="img/records/note-03.jpg" alt="RAG 笔记 03" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="record-img" style="display:none;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.9rem;">📷 笔记 03</div>
+        <div class="record-info">
+          <div class="record-title">笔记 03</div>
+          <div class="record-meta">内网穿透 & PDF 流程</div>
+          <span class="record-tag notes">手写笔记</span>
+        </div>
+      </div>
+
+      <!-- 笔记 04 -->
+      <div class="record-card" onclick="openLightbox('img/records/note-04.jpg', 'RAG 学习笔记 04')">
+        <img class="record-img" src="img/records/note-04.jpg" alt="RAG 笔记 04" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="record-img" style="display:none;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.9rem;">📷 笔记 04</div>
+        <div class="record-info">
+          <div class="record-title">笔记 04</div>
+          <div class="record-meta">BaseModel & 异步处理</div>
+          <span class="record-tag notes">手写笔记</span>
+        </div>
+      </div>
+
+      <!-- 笔记 05 -->
+      <div class="record-card" onclick="openLightbox('img/records/note-05.jpg', 'RAG 学习笔记 05')">
+        <img class="record-img" src="img/records/note-05.jpg" alt="RAG 笔记 05" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="record-img" style="display:none;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.9rem;">📷 笔记 05</div>
+        <div class="record-info">
+          <div class="record-title">笔记 05</div>
+          <div class="record-meta">FastAPI 启动流程</div>
+          <span class="record-tag notes">手写笔记</span>
+        </div>
+      </div>
+
+      <!-- 笔记 06 -->
+      <div class="record-card" onclick="openLightbox('img/records/note-06.jpg', 'RAG 学习笔记 06')">
+        <img class="record-img" src="img/records/note-06.jpg" alt="RAG 笔记 06" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="record-img" style="display:none;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.9rem;">📷 笔记 06</div>
+        <div class="record-info">
+          <div class="record-title">笔记 06</div>
+          <div class="record-meta">Reranker & 混合检索</div>
+          <span class="record-tag notes">手写笔记</span>
+        </div>
+      </div>
+
+      <!-- 笔记 07 -->
+      <div class="record-card" onclick="openLightbox('img/records/note-07.jpg', 'RAG 学习笔记 07')">
+        <img class="record-img" src="img/records/note-07.jpg" alt="RAG 笔记 07" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="record-img" style="display:none;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.9rem;">📷 笔记 07</div>
+        <div class="record-info">
+          <div class="record-title">笔记 07</div>
+          <div class="record-meta">QueryFusionRetriever</div>
+          <span class="record-tag notes">手写笔记</span>
+        </div>
+      </div>
+
+      <!-- 笔记 08 -->
+      <div class="record-card" onclick="openLightbox('img/records/note-08.jpg', 'RAG 学习笔记 08')">
+        <img class="record-img" src="img/records/note-08.jpg" alt="RAG 笔记 08" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="record-img" style="display:none;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.9rem;">📷 笔记 08</div>
+        <div class="record-info">
+          <div class="record-title">笔记 08</div>
+          <div class="record-meta">Chunking & BM25</div>
+          <span class="record-tag notes">手写笔记</span>
+        </div>
+      </div>
+
+      <!-- 笔记 09 -->
+      <div class="record-card" onclick="openLightbox('img/records/note-09.jpg', 'RAG 学习笔记 09')">
+        <img class="record-img" src="img/records/note-09.jpg" alt="RAG 笔记 09" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="record-img" style="display:none;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.9rem;">📷 笔记 09</div>
+        <div class="record-info">
+          <div class="record-title">笔记 09</div>
+          <div class="record-meta">Docker 基础</div>
+          <span class="record-tag notes">手写笔记</span>
+        </div>
+      </div>
+
+      <!-- 笔记 10 -->
+      <div class="record-card" onclick="openLightbox('img/records/note-10.jpg', 'RAG 学习笔记 10')">
+        <img class="record-img" src="img/records/note-10.jpg" alt="RAG 笔记 10" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="record-img" style="display:none;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.9rem;">📷 笔记 10</div>
+        <div class="record-info">
+          <div class="record-title">笔记 10</div>
+          <div class="record-meta">产品化思路</div>
+          <span class="record-tag notes">手写笔记</span>
+        </div>
+      </div>
+
+      <!-- 笔记 11 -->
+      <div class="record-card" onclick="openLightbox('img/records/note-11.jpg', 'RAG 学习笔记 11')">
+        <img class="record-img" src="img/records/note-11.jpg" alt="RAG 笔记 11" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="record-img" style="display:none;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.9rem;">📷 笔记 11</div>
+        <div class="record-info">
+          <div class="record-title">笔记 11</div>
+          <div class="record-meta">MCP 协议 & Hermes</div>
+          <span class="record-tag notes">手写笔记</span>
+        </div>
+      </div>
+
+      <!-- 笔记 12 -->
+      <div class="record-card" onclick="openLightbox('img/records/note-12.jpg', 'RAG 学习笔记 12')">
+        <img class="record-img" src="img/records/note-12.jpg" alt="RAG 笔记 12" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="record-img" style="display:none;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.9rem;">📷 笔记 12</div>
+        <div class="record-info">
+          <div class="record-title">笔记 12</div>
+          <div class="record-meta">Excel 处理 & 数据类型</div>
+          <span class="record-tag notes">手写笔记</span>
+        </div>
+      </div>
+
+      <!-- 笔记 13 -->
+      <div class="record-card" onclick="openLightbox('img/records/note-13.jpg', 'RAG 学习笔记 13')">
+        <img class="record-img" src="img/records/note-13.jpg" alt="RAG 笔记 13" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="record-img" style="display:none;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.9rem;">📷 笔记 13</div>
+        <div class="record-info">
+          <div class="record-title">笔记 13</div>
+          <div class="record-meta">防幻觉 & Excel 接入</div>
+          <span class="record-tag notes">手写笔记</span>
+        </div>
+      </div>
     </div>
   </div>
 
