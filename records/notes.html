@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAG 学习手写笔记 - Rhine</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+    }
+    .breadcrumb a {
+      color: var(--accent);
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+    .breadcrumb a:hover { opacity: 0.7; }
+
+    .records-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+    .record-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      transition: all 0.35s ease;
+      cursor: pointer;
+    }
+    .record-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-hover);
+      border-color: rgba(37, 99, 235, 0.2);
+    }
+    .record-img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      display: block;
+      background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+    }
+    .record-info {
+      padding: 1.25rem;
+    }
+    .record-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+    }
+    .record-meta {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 0.6rem;
+    }
+    .record-tag {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 6px;
+      background: rgba(37, 99, 235, 0.06);
+      color: var(--accent);
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    /* Lightbox */
+    .lightbox {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .lightbox.active { display: flex; }
+    .lightbox img {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+    .lightbox-close {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      font-size: 2rem;
+      color: #fff;
+      cursor: pointer;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+    .lightbox-close:hover { opacity: 1; }
+    .lightbox-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 2.5rem;
+      color: #fff;
+      cursor: pointer;
+      opacity: 0.5;
+      transition: opacity 0.2s;
+      padding: 1rem;
+    }
+    .lightbox-nav:hover { opacity: 1; }
+    .lightbox-prev { left: 10px; }
+    .lightbox-next { right: 10px; }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="../index.html" class="nav-logo">Rhine<span>.</span></a>
+      <div class="nav-links">
+        <a href="../index.html">首页</a>
+        <a href="../projects.html">项目</a>
+        <a href="../blog.html">博客</a>
+        <a href="../poetry.html">诗集</a>
+        <a href="../records.html" class="active">记录</a>
+        <a href="../about.html">关于我</a>
+      </div>
+      <div class="clock" id="clock">--:--:--</div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <!-- 面包屑 -->
+    <div class="breadcrumb">
+      <a href="../records.html">记录</a>
+      <span>/</span>
+      <span>RAG 学习手写笔记</span>
+    </div>
+
+    <h1 class="page-title">RAG 学习手写笔记</h1>
+    <p class="page-desc">从零学习 RAG 技术过程中的手写笔记，涵盖 Embedding、混合检索、Reranker、FastAPI、Docker、MCP 等核心知识点</p>
+
+    <div class="records-grid">
+      <div class="record-card" onclick="openLightbox(0)">
+        <img class="record-img" src="../img/records/note-01.jpg" alt="笔记 01" loading="lazy">
+        <div class="record-info">
+          <div class="record-title">笔记 01</div>
+          <div class="record-meta">RAG 基础概念</div>
+          <span class="record-tag">手写笔记</span>
+        </div>
+      </div>
+
+      <div class="record-card" onclick="openLightbox(1)">
+        <img class="record-img" src="../img/records/note-02.jpg" alt="笔记 02" loading="lazy">
+        <div class="record-info">
+          <div class="record-title">笔记 02</div>
+          <div class="record-meta">Kimi API & RAG 流程</div>
+          <span class="record-tag">手写笔记</span>
+        </div>
+      </div>
+
+      <div class="record-card" onclick="openLightbox(2)">
+        <img class="record-img" src="../img/records/note-03.jpg" alt="笔记 03" loading="lazy">
+        <div class="record-info">
+          <div class="record-title">笔记 03</div>
+          <div class="record-meta">内网穿透 & PDF 流程</div>
+          <span class="record-tag">手写笔记</span>
+        </div>
+      </div>
+
+      <div class="record-card" onclick="openLightbox(3)">
+        <img class="record-img" src="../img/records/note-04.jpg" alt="笔记 04" loading="lazy">
+        <div class="record-info">
+          <div class="record-title">笔记 04</div>
+          <div class="record-meta">BaseModel & 异步处理</div>
+          <span class="record-tag">手写笔记</span>
+        </div>
+      </div>
+
+      <div class="record-card" onclick="openLightbox(4)">
+        <img class="record-img" src="../img/records/note-05.jpg" alt="笔记 05" loading="lazy">
+        <div class="record-info">
+          <div class="record-title">笔记 05</div>
+          <div class="record-meta">FastAPI 启动流程</div>
+          <span class="record-tag">手写笔记</span>
+        </div>
+      </div>
+
+      <div class="record-card" onclick="openLightbox(5)">
+        <img class="record-img" src="../img/records/note-06.jpg" alt="笔记 06" loading="lazy">
+        <div class="record-info">
+          <div class="record-title">笔记 06</div>
+          <div class="record-meta">Reranker & 混合检索</div>
+          <span class="record-tag">手写笔记</span>
+        </div>
+      </div>
+
+      <div class="record-card" onclick="openLightbox(6)">
+        <img class="record-img" src="../img/records/note-07.jpg" alt="笔记 07" loading="lazy">
+        <div class="record-info">
+          <div class="record-title">笔记 07</div>
+          <div class="record-meta">QueryFusionRetriever</div>
+          <span class="record-tag">手写笔记</span>
+        </div>
+      </div>
+
+      <div class="record-card" onclick="openLightbox(7)">
+        <img class="record-img" src="../img/records/note-08.jpg" alt="笔记 08" loading="lazy">
+        <div class="record-info">
+          <div class="record-title">笔记 08</div>
+          <div class="record-meta">Chunking & BM25</div>
+          <span class="record-tag">手写笔记</span>
+        </div>
+      </div>
+
+      <div class="record-card" onclick="openLightbox(8)">
+        <img class="record-img" src="../img/records/note-09.jpg" alt="笔记 09" loading="lazy">
+        <div class="record-info">
+          <div class="record-title">笔记 09</div>
+          <div class="record-meta">Docker 基础</div>
+          <span class="record-tag">手写笔记</span>
+        </div>
+      </div>
+
+      <div class="record-card" onclick="openLightbox(9)">
+        <img class="record-img" src="../img/records/note-10.jpg" alt="笔记 10" loading="lazy">
+        <div class="record-info">
+          <div class="record-title">笔记 10</div>
+          <div class="record-meta">产品化思路</div>
+          <span class="record-tag">手写笔记</span>
+        </div>
+      </div>
+
+      <div class="record-card" onclick="openLightbox(10)">
+        <img class="record-img" src="../img/records/note-11.jpg" alt="笔记 11" loading="lazy">
+        <div class="record-info">
+          <div class="record-title">笔记 11</div>
+          <div class="record-meta">MCP 协议 & Hermes</div>
+          <span class="record-tag">手写笔记</span>
+        </div>
+      </div>
+
+      <div class="record-card" onclick="openLightbox(11)">
+        <img class="record-img" src="../img/records/note-12.jpg" alt="笔记 12" loading="lazy">
+        <div class="record-info">
+          <div class="record-title">笔记 12</div>
+          <div class="record-meta">Excel 处理 & 数据类型</div>
+          <span class="record-tag">手写笔记</span>
+        </div>
+      </div>
+
+      <div class="record-card" onclick="openLightbox(12)">
+        <img class="record-img" src="../img/records/note-13.jpg" alt="笔记 13" loading="lazy">
+        <div class="record-info">
+          <div class="record-title">笔记 13</div>
+          <div class="record-meta">防幻觉 & Excel 接入</div>
+          <span class="record-tag">手写笔记</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+    <span class="lightbox-close">&times;</span>
+    <span class="lightbox-nav lightbox-prev" onclick="navLightbox(-1, event)">&#8249;</span>
+    <img id="lightbox-img" src="" alt="">
+    <span class="lightbox-nav lightbox-next" onclick="navLightbox(1, event)">&#8250;</span>
+  </div>
+
+  <footer>
+    <p>&copy; 2026 Rhine &middot; Logic Junction X</p>
+  </footer>
+
+  <script>
+    // Clock
+    function updateClock() {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2,'0');
+      const m = String(now.getMinutes()).padStart(2,'0');
+      const s = String(now.getSeconds()).padStart(2,'0');
+      const d = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+      document.getElementById('clock').textContent = d+' '+h+':'+m+':'+s;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // Lightbox with navigation
+    const images = [];
+    for (let i = 1; i <= 13; i++) {
+      images.push('../img/records/note-' + String(i).padStart(2,'0') + '.jpg');
+    }
+    let currentIndex = 0;
+
+    function openLightbox(index) {
+      currentIndex = index;
+      document.getElementById('lightbox-img').src = images[index];
+      document.getElementById('lightbox').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox(e) {
+      if (e && e.target !== document.getElementById('lightbox') && !e.target.classList.contains('lightbox-close')) return;
+      document.getElementById('lightbox').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    function navLightbox(dir, e) {
+      e.stopPropagation();
+      currentIndex = (currentIndex + dir + images.length) % images.length;
+      document.getElementById('lightbox-img').src = images[currentIndex];
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (!document.getElementById('lightbox').classList.contains('active')) return;
+      if (e.key === 'Escape') closeLightbox({target: document.getElementById('lightbox')});
+      if (e.key === 'ArrowLeft') navLightbox(-1, {stopPropagation:()=>{}});
+      if (e.key === 'ArrowRight') navLightbox(1, {stopPropagation:()=>{}});
+    });
+  </script>
+</body>
+</html>
