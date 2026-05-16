@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>关于我 - Rhine</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">Rhine<span>.</span></a>
+      <div class="nav-links">
+        <a href="index.html">首页</a>
+        <a href="projects.html">项目</a>
+        <a href="blog.html">博客</a>
+        <a href="poetry.html">诗集</a>
+        <a href="about.html" class="active">关于我</a>
+      </div>
+      <div class="clock" id="clock">--:--:--</div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h1 class="page-title">关于我</h1>
+    <p class="page-desc">一个用代码探索世界的大一学生</p>
+
+    <div class="about-section">
+      <h2 class="about-heading">👋 你好，我是 Rhine</h2>
+      <div class="about-content">
+        <p>
+          深圳信息职业技术大学 · 工业互联网专业 · 大一在读。
+        </p>
+        <p>
+          从大一开始就独立做项目，没有老师带，靠着 AI 辅助和不断试错，
+          在一个月内从零学会了 RAG（检索增强生成），并搭建了一套完整的系统。
+        </p>
+        <p>
+          我相信技术不是用来炫技的，而是用来解决真实问题的。
+          无论是帮个体工商户做财务助手，还是用 AI 做投资晨报，
+          核心都是让技术落地到具体场景里。
+        </p>
+      </div>
+    </div>
+
+    <div class="about-section">
+      <h2 class="about-heading">🛠 技术栈</h2>
+      <div class="tech-stack">
+        <span class="tech-tag">Python</span>
+        <span class="tech-tag">FastAPI</span>
+        <span class="tech-tag">Streamlit</span>
+        <span class="tech-tag">LlamaIndex</span>
+        <span class="tech-tag">RAG</span>
+        <span class="tech-tag">Docker</span>
+        <span class="tech-tag">SQLite</span>
+        <span class="tech-tag">Git</span>
+        <span class="tech-tag">Linux</span>
+        <span class="tech-tag">MCP 协议</span>
+        <span class="tech-tag">微信 Bot</span>
+        <span class="tech-tag">飞书 Bot</span>
+      </div>
+    </div>
+
+    <div class="about-section">
+      <h2 class="about-heading">🏆 正在做的事</h2>
+      <div class="about-content">
+        <p>
+          <strong>RAG-Skeleton</strong>：通用 AI 知识库骨架，丢进什么文档就是什么助手。
+          已支持混合检索、Reranker 精排、Ollama 离线运行、Docker 一键部署。
+        </p>
+        <p>
+          <strong>iCAN 2026</strong>：准备参加 iCAN 全国大学生创新创业大赛，
+          目标冲国奖。正在把 RAG 系统产品化，做成插电即用的成品小主机。
+        </p>
+        <p>
+          <strong>ACA 认证</strong>：备考阿里云大模型工程师认证，计划 6 月拿证。
+        </p>
+      </div>
+    </div>
+
+    <div class="about-section">
+      <h2 class="about-heading">📫 联系我</h2>
+      <div class="contact-links">
+        <a href="https://github.com/Rhine9527123" target="_blank" class="contact-card">
+          <div class="contact-icon">🐙</div>
+          <div class="contact-info">
+            <div class="contact-name">GitHub</div>
+            <div class="contact-detail">github.com/Rhine9527123</div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p> 2026 Rhine · Logic Junction X</p>
+  </footer>
+
+  <script>
+    function updateClock() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      const dateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+      document.getElementById('clock').textContent = dateStr + ' ' + hours + ':' + minutes + ':' + seconds;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+  </script>
+</body>
+</html>
