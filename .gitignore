@@ -1,0 +1,6 @@
+# Hugo 生成文件（不要推到 gh-pages）
+public/
+themes/
+.hugo_build.lock
+resources/
+.hugo_cache/
