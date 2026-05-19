@@ -3,22 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>博客 - Rhine</title>
+  <title>博客 - 刘俊贤</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <nav class="nav">
     <div class="nav-inner">
-      <a href="index.html" class="nav-logo">Rhine<span>.</span></a>
+      <a href="index.html" class="nav-logo">刘<span>.</span></a>
       <div class="nav-links">
         <a href="index.html">首页</a>
         <a href="projects.html">项目</a>
         <a href="blog.html" class="active">博客</a>
         <a href="poetry.html">诗集</a>
-        <a href="records.html">记录</a>
-        <a href="about.html">关于我</a>
       </div>
-      <div class="clock" id="clock">--:--:--</div>
     </div>
   </nav>
 
@@ -27,6 +24,15 @@
     <p class="page-desc">记录学习过程、项目踩坑和技术思考</p>
 
     <div class="blog-list">
+      <a href="blog/transformer-learning.html" class="blog-item">
+        <div class="blog-item-title">Transformer 学习日志：从 Attention 到 Encoder-Decoder</div>
+        <div class="blog-item-meta">2026-05-19 · 技术学习</div>
+        <div class="blog-item-desc">
+          学习 Transformer 核心组件的感悟：注意力机制、FFN、残差连接、Layer Norm。
+          用"钦差大臣"比喻梯度消失，用"疯子和兜底"理解残差连接的作用。
+        </div>
+      </a>
+
       <a href="blog/rag-dev-log.html" class="blog-item">
         <div class="blog-item-title">RAG-Skeleton 开发日志：从 0 到 1 的踩坑记录</div>
         <div class="blog-item-meta">2026-05-10 · 项目记录</div>
@@ -57,20 +63,7 @@
   </div>
 
   <footer>
-    <p> 2026 Rhine · Logic Junction X</p>
+    <p> 2026 刘俊贤 · 用代码探索世界</p>
   </footer>
-
-  <script>
-    function updateClock() {
-      const now = new Date();
-      const hours = String(now.getHours()).padStart(2, '0');
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-      const seconds = String(now.getSeconds()).padStart(2, '0');
-      const dateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
-      document.getElementById('clock').textContent = dateStr + ' ' + hours + ':' + minutes + ':' + seconds;
-    }
-    updateClock();
-    setInterval(updateClock, 1000);
-  </script>
 </body>
 </html>
