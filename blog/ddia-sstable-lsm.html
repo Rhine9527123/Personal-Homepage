@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DDIA 读书笔记：用大白话理解 SSTable 和 LSM-Tree - Rhine</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="../index.html" class="nav-logo">Rhine<span>.</span></a>
+      <div class="nav-links">
+        <a href="../index.html">首页</a>
+        <a href="../projects.html">项目</a>
+        <a href="../blog.html" class="active">博客</a>
+        <a href="../poetry.html">诗集</a>
+        <button class="theme-toggle" aria-label="切换主题">🌙</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <article class="article">
+      <h1>DDIA 读书笔记：用大白话理解 SSTable 和 LSM-Tree</h1>
+      <div class="article-meta">2026-06-06 · 读书笔记 · Designing Data-Intensive Applications</div>
+
+      <div class="article-content">
+        <p>杂谈：今天早上突然下了很大的雨，还打雷。不得不说很适合睡觉！今天周六我也是赖床到中午 11 点才起床，准备好后 12 点半才到了图书馆。今天的饮品是椰蓉咖啡——小苹果咖啡卖完了（痛心）</p>
+
+        <p>进入正题，主要谈谈我对 SSTable 和 LSM-Tree 的理解。</p>
+
+        <p>要想啃动 DDIA 里面晦涩难懂的话，不如先带着问题去找答案或许能够深刻理解其中的概念。</p>
+
+        <p>像是我们日常的日志是想到了什么写什么，但是事后想要回头来看就需要一页一页的翻，为了提高查找的效率，采用 SSTable 就是很明智的选择。</p>
+
+        <hr>
+
+        <h2>第一个问题：什么是 SSTable（排序字符串表）？</h2>
+
+        <p><strong>一句话解决：按顺序排好队的数据文件。</strong></p>
+
+        <p>这个时候就有疑问了，这个顺序的依据是什么？是我们自己想的那样按照文件大小、名字、拼音来排序的吗？</p>
+
+        <p>很可惜，并不完全是。机器有一套自己能看懂的排序法则——字典序、自定义排序、多版本排序。在默认情况下 SSTable 会依靠字典序给数据文件排序；不过你想要按照你的想法排序，也可以采用自定义排序规则；当出现同名字但是多版本的情况下可以采用多版本排序。</p>
+
+        <h3>tips</h3>
+
+        <p><strong>1. 字典序分为两种：</strong>第一，为纯英文字母：这个时候字典序的排列规则和字母排序规则一样（ABCD……）。第二，包含了数字、符号或中文的复杂字符：字典序按照底层字节编码（如 ASCII、UTF-8……）逐个比较。</p>
+
+        <p><strong>2. 自定义排序：</strong>按照你的想法（如：中文拼音排序或是特定 ID）可以传入自定义的比较逻辑来改变默认的字典序。</p>
+
+        <p><strong>3. 多版本排序（以 LevelDB 为例子）：</strong>先通过 User Key 的字典序先升序排序，如果出现 User Key 相同的情况，然后再通过版本号降序排列（新在前旧在后的顺序）。</p>
+
+        <hr>
+
+        <h2>第二个问题：为什么这么排，核心优势在哪里？</h2>
+
+        <p><strong>1. 合并段更加简单高效，即使文件大于可用内存。</strong></p>
+
+        <p><strong>2. 在文件查找特定键时，不需要在内存中保存所有键的索引。</strong></p>
+
+        <h3>"合并段更加简单高效"是什么意思？</h3>
+
+        <p>举个例子，如要将两个文件合并，先将两个文件分别排好序，分为 A 和 B。然后比较各自的排头，谁小谁先放入队里。</p>
+
+        <p>假设：A 文件 [1, 5, 7, 8, 13] &nbsp;&nbsp; B 文件 [2, 3, 5, 7, 9] &nbsp;&nbsp; 合并后的文件 C [ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]</p>
+
+        <p>流程：A 的排头（1）和 B 的排头（2）相比，因为 1 &lt; 2，所以 A 的排头先放入 C，然后排头变更为下一个，B 的排头不变。这个时候变成 A[5, 7, 8, 13] &nbsp; B[2, 3, 5, 7, 9] &nbsp; C[1, &nbsp;&nbsp;&nbsp;&nbsp;]</p>
+
+        <p>然后按顺序，排头依次比较填入合并文件 C 中。最后合并文件 C 变成 [1, 2, 3, 5, 7, 8, 9, 13]。其中 SSTable 合并的时候会去重，只会保留 1 个。</p>
+
+        <h3>"文件大于可用内存"是什么意思？</h3>
+
+        <p>举个例子，这个文件是一个巨无霸汉堡，内存是你的嘴巴。你不可能一口就把巨无霸汉堡吃掉（会漏出来），于是聪明的你学会一小口一小口的吃，这样哪怕文件比内存大很多倍也能消化完。</p>
+
+        <h3>"不需要在内存中保存所有键的索引"是什么意思？</h3>
+
+        <p>这句话其实指代了"稀疏索引"的特性。就好比如，你想要去深圳，聪明的你肯定知道，不会在地图上一个城市一个城市的寻找，而是先找到广东省这个，范围再在广东省里面找深圳市。有了这个功能，电脑就不需要线性寻找（一个城市一个城市找）而是先通过找一个大的范围再找小的范围，减少内存占用。</p>
+
+        <hr>
+
+        <h2>第三个问题：维护和构建 SSTable 是什么？</h2>
+
+        <p><strong>核心要义是：内存小批量落盘，后台异步合并后去重。</strong></p>
+
+        <p>我自己想了一个例子叫做——<strong>泡泡合并过程</strong></p>
+
+        <p>由于我们写入数据的时候是无序的，为此会先将写入的数据先放入内存里面。该数据在内存里用特殊的数据结构存储并排序（如红黑树）构成了内存表——<strong>小泡泡</strong>（其中排序的过程叫：跳表）</p>
+
+        <p>当小泡泡（内存表）大于某个阈值（如 10MB）的时候就写入磁盘——这个时候泡泡飘起来了，这个过程又叫<strong>落盘</strong>。</p>
+
+        <p>当无数的小泡泡在磁盘里相遇的时候会合并成一个大泡泡，顺便消去里面重复的部分——<strong>压缩合并</strong>。</p>
+
+        <hr>
+
+        <h2>第四个问题：LSM-Tree 是什么？它和 SSTable 的关系是什么？</h2>
+
+        <p><strong>LSM-Tree 的本质是：基于 SSTable 和 Compaction（压缩合并）机制构建的存储引擎架构。</strong></p>
+
+        <p><strong>特点：将随机写入转化为顺序写入</strong>（先写入内存再进入磁盘）极大提升了写入吞吐量。</p>
+
+        <p>举例说明：LSM-Tree 就像是教 SSTable 如何吹泡泡，如何排序和合并泡泡。二者的关系是：LSM-Tree 包含了 SSTable。</p>
+
+        <hr>
+
+        <p>以上就是我对 SSTable 和 LSM-Tree 的理解了，希望这些类比能帮你更快啃动 DDIA！</p>
+      </div>
+    </article>
+  </div>
+
+  <footer>
+    <p>2026 Rhine · 用代码探索世界</p>
+  </footer>
+  <script src="../js/theme.js"></script>
+</body>
+</html>
