@@ -655,6 +655,50 @@ footer {
 }
 
 /* ========================================
+   证书展示
+   ======================================== */
+.cert-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+
+.cert-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: all 0.35s ease;
+}
+
+.cert-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover);
+  border-color: rgba(37, 99, 235, 0.2);
+}
+
+.cert-card img {
+  width: 100%;
+  height: auto;
+  display: block;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  object-position: center top;
+}
+
+.cert-label {
+  padding: 0.85rem 1.25rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  text-align: center;
+  background: var(--bg-elevated);
+  border-top: 1px solid var(--border);
+  margin-bottom: 0 !important;
+}
+
+/* ========================================
    主题切换按钮
    ======================================== */
 .theme-toggle {
@@ -688,6 +732,8 @@ footer {
 [data-theme="dark"] .article-content code { background: #282a3a; color: var(--accent); }
 [data-theme="dark"] .article-content pre { background: #13141e; border-color: var(--border); }
 [data-theme="dark"] .hero::before { background: radial-gradient(ellipse at 30% 20%, rgba(109,140,240,0.06) 0%, transparent 60%), radial-gradient(ellipse at 70% 60%, rgba(168,85,247,0.04) 0%, transparent 50%); }
+[data-theme="dark"] .cert-card { background: var(--bg-card); border-color: var(--border); }
+[data-theme="dark"] .cert-label { background: var(--bg-elevated); }
 
 /* ========================================
    响应式
