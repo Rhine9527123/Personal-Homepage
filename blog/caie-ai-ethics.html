@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CAIE 知识点总结：AI 伦理篇 - Rhine</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="../index.html" class="nav-logo">Rhine<span>.</span></a>
+      <div class="nav-links">
+        <a href="../index.html">首页</a>
+        <a href="../projects.html">项目</a>
+        <a href="../blog.html">博客</a>
+        <a href="../poetry.html">诗集</a>
+        <a href="../about.html">关于我</a>
+        <button class="theme-toggle" aria-label="切换主题">🌙</button>
+      </div>
+      <div class="clock" id="clock">--:--:--</div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <article class="article">
+      <h1>CAIE 知识点总结：AI 伦理篇</h1>
+      <div class="article-meta">2026-09-18 · 考证笔记 · CAIE 人工智能工程师 Level I</div>
+
+      <div class="article-content">
+        <p><strong>写在前面：</strong>暑假放松了快两个月，开学前两周突击学习 CAIE I 的相关知识点。这篇是我个人的知识点总结——用自己的话把考纲里的概念复述一遍，能讲明白的才算真懂。</p>
+
+        <h2>一、AI 伦理问题：为什么开篇不讲技术，先讲伦理？</h2>
+        <p>CAIE 考纲的第一部分，开篇不是大模型的底层架构、技术选型这些"干货"，而是着重讨论 AI 的能力边界和伦理问题。为什么？因为技术决定 AI 能走多快，伦理决定 AI 能走多远。结合生活中能看到的现象，我把几个重要的伦理问题捋一遍。</p>
+
+        <h3>1. 偏见与歧视</h3>
+        <p><strong>知识点：</strong>历史数据中存在歧视，模型会将系统性放大偏见，导致对特定群体的算法歧视。</p>
+        <p>AI 和我们人类一样，"出生"时什么都不懂，更别说歧视他人了。那为什么训练完就会放大歧视？本质原因就藏在历史数据里——模型从带偏见的数据里学习，后天"继承"了这种偏见。</p>
+        <p><strong>举个例子：</strong>亚马逊曾用历史招聘数据训练 AI 筛简历。因为过去十年的技术岗位大多录取男性，模型就"学会"了给女性简历打低分——历史数据里的偏见，被模型原样放大成了算法歧视。</p>
+
+        <h3>2. 算法黑箱（Black Box Problem）</h3>
+        <p><strong>知识点：</strong>DNN（深层神经网络）的内部计算过程难以追溯，连设计者也无法解释"模型为什么会得出这个答案"。</p>
+        <p>很多人看到 DNN 就觉得很深奥，其实举个例子就明白了：每个人的脑子都是独一份的，你永远不知道另一个人的内心世界在想什么。A 看到科比想到的是打篮球，B 看到科比想到的却是直升机——两个截然不同甚至有点荒谬的答案，原因就在于每个人的"脑回路"不同。DNN 差不多就是这么回事。</p>
+        <p>在工程上为了缓解黑箱问题，一般会用 CoT（思维链）和 RAG 两个方案，让 AI 把推理过程或参考依据摆出来。但这只能解决"表层可解释"的问题——真到了算法内部，依然无能为力。</p>
+
+        <h3>3. 深度伪造（DeepFake）与虚假信息</h3>
+        <p><strong>知识点：</strong>AIGC 技术可以伪造内容——AI 换脸、AI 仿声等，一旦被不法分子用于诈骗、造谣，危害极大。</p>
+
+        <h3>4. 数字鸿沟</h3>
+        <p><strong>知识点：</strong>AI 红利分布不均，自动化冲击带来的失业风险，更多由低技能劳动者承担。</p>
+        <p>在深圳坪山，你可以打到萝卜快跑这样的"无人滴滴"；但在一些偏远地区，可能连 AI 是什么都不知道。同一项技术，有人享受红利，有人承受冲击——这就是数字鸿沟最直接的体现。</p>
+
+        <h2>二、核心准则：让 AI 做个"老实人"</h2>
+        <p>考纲给了五条核心准则：</p>
+        <ol>
+          <li><strong>诚实性原则</strong>——不编造、不胡说</li>
+          <li><strong>数据责任</strong>——不用来路不明的材料</li>
+          <li><strong>有害性规避</strong>——不产生有害内容</li>
+          <li><strong>溯源声明</strong>——说明内容来源、标注 AI 生成</li>
+          <li><strong>人工监管</strong>——关键决策必须有人把关</li>
+        </ol>
+        <p>归根结底一句话：<strong>让 AI 做一个老实人——不说谎，不用来路不明的材料，不歧视。</strong></p>
+
+        <h2>三、隐私保护技术</h2>
+
+        <h3>1. 数据匿名化</h3>
+        <p>最直观的例子：项目要在 GitHub 开源时，先把 API Key 等隐私信息去掉。</p>
+
+        <h3>2. 联邦学习（Federated Learning）</h3>
+        <p><strong>好处：</strong>数据保留在本地，只共享模型参数，不上传原始数据。</p>
+        <p><strong>缺点：</strong>外部攻击者仍可能通过模型参数反推出用户的隐私信息。</p>
+
+        <h3>3. 差分隐私（Differential Privacy）</h3>
+        <p>在返回任何关于数据集的统计查询结果时，人为注入精密校准的随机噪声（隐私预算 ε）。</p>
+        <p><strong>类比：</strong>A 和 B 聊天时不想让旁边的 C 听懂，于是在语句里掺入只有 A 和 B 才懂的"黑话"——外人听了，抓不住真实内容。</p>
+
+        <h3>4. 同态加密（Homomorphic Encryption）</h3>
+        <p>允许在不解密的前提下，直接对密文进行数学运算。</p>
+
+        <h2>四、人工智能的能力边界</h2>
+        <ol>
+          <li><strong>弱人工智能（Narrow AI）：</strong>在特定领域或任务上能力突出，但能力无法迁移到其他领域。当前所有的商用 AI 都属于弱人工智能。</li>
+          <li><strong>通用人工智能（AGI）：</strong>具备与人类相当的通识认知能力——梁文锋的究极目标就是这个！</li>
+        </ol>
+
+        <h2>写在最后</h2>
+        <blockquote>
+          伦理不是技术的刹车，而是技术的方向盘。理解 AI 能做什么，也理解它不该做什么——这才是 CAIE 把伦理放在第一部分的原因。
+        </blockquote>
+      </div>
+    </article>
+  </div>
+
+  <footer>
+    <p> 2026 Rhine · Logic Junction X</p>
+  </footer>
+
+  <script>
+    function updateClock() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      const dateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+      document.getElementById('clock').textContent = dateStr + ' ' + hours + ':' + minutes + ':' + seconds;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+  </script>
+  <script src="../js/theme.js"></script>
+</body>
+</html>
