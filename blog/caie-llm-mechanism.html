@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CAIE 知识点总结：大模型机制篇 - Rhine</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="../index.html" class="nav-logo">Rhine<span>.</span></a>
+      <div class="nav-links">
+        <a href="../index.html">首页</a>
+        <a href="../projects.html">项目</a>
+        <a href="../blog.html">博客</a>
+        <a href="../poetry.html">诗集</a>
+        <a href="../about.html">关于我</a>
+        <button class="theme-toggle" aria-label="切换主题">🌙</button>
+      </div>
+      <div class="clock" id="clock">--:--:--</div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <article class="article">
+      <h1>CAIE 知识点总结：大模型机制篇</h1>
+      <div class="article-meta">2026-09-29 · 考证笔记 · CAIE 人工智能工程师 Level I</div>
+
+      <div class="article-content">
+        <p><strong>写在前面：</strong>这些技术博客主要是依照我的个人理解所写，希望能帮助到你。</p>
+        <p>经过《<a href="caie-ai-ethics.html">AI 伦理篇</a>》的论述，应该对 AI 的能力边界和技术带来的风险有了认知。这次《机制篇》则真正踏入 AI 大模型的底层领域——让我们从机制出发，搞懂 AI「为什么会这么做」。</p>
+
+        <h2>一、AI 算法模块的组成</h2>
+        <div class="mermaid">
+flowchart LR
+    A["输入数据"]:::io --> B["特征表示"]:::io --> C["大模型<br/>LLM"]:::core --> D["输出结果"]:::io --> E["损失计算"]:::io --> F["参数更新"]:::io
+    classDef io fill:#dbeafe,stroke:#2563eb,stroke-width:1.5px,color:#1e3a8a;
+    classDef core fill:#dcfce7,stroke:#16a34a,stroke-width:2.5px,color:#14532d;
+        </div>
+        <p>每个环节分别负责：</p>
+        <ol>
+          <li><strong>输入数据</strong>——我们人类提供给 AI 的训练资料</li>
+          <li><strong>特征表示</strong>——将训练资料转换为模型可以计算的形式</li>
+          <li><strong>大模型</strong>——提取规律并预测</li>
+          <li><strong>输出结果</strong>——分类并生成判断</li>
+          <li><strong>损失计算</strong>——衡量答案对与否</li>
+          <li><strong>参数更新</strong>——根据误差去修正模型</li>
+        </ol>
+        <p><strong>举个例子：</strong>我们是一群小学生（没训练的 AI），这时候来了个美国外教教我们数学。首先外教发给我们一人一本数学练习册去学习知识点（<strong>输入数据</strong>），随后外教开始给我们讲题。可是我们都是中国人，听不懂英语怎么办？这时候一旁的翻译把老师的话翻译给我们听（<strong>特征表示</strong>）。听完之后，我们似懂非懂，打算先根据自己的理解做做题（<strong>大模型</strong>）。时间一到，老师收走我们做完的题目（<strong>输出结果</strong>），随后开始批改（<strong>损失计算</strong>）。最后，外教给我们讲解了错题，我们进行了改错（<strong>参数更新</strong>）。这个时候，这道题的正确解法就刻在我们的脑子里啦。</p>
+
+        <h2>二、「参数更新」与训练方法</h2>
+        <div class="mermaid">
+flowchart LR
+    A["前向计算<br/>先做一遍题"]:::io --> B["计算误差<br/>对照答案批改"]:::io --> C["反向调整<br/>总结错题并内化"]:::io --> D["重复迭代<br/>如此往复"]:::core
+    D -.->|循环回去| A
+    classDef io fill:#dbeafe,stroke:#2563eb,stroke-width:1.5px,color:#1e3a8a;
+    classDef core fill:#ffedd5,stroke:#ea580c,stroke-width:2.5px,color:#7c2d12;
+        </div>
+        <p>依旧是原来的例子，只不过没有了老师的帮助，全部依靠自己（大模型 LLM）去学习迭代。自学的过程中，我们会先根据自己的知识储备把题做一遍（<strong>前向计算</strong>），做完后对照答案批改（<strong>计算误差</strong>），接着总结错题并把知识内化（<strong>反向调整</strong>），如此往复（<strong>重复迭代</strong>）。</p>
+
+        <h3>为什么不一开始就给 AI 看答案？</h3>
+        <p>当时在教学弟的时候，他提出了一个很有意思的问题：「为什么不一开始给 AI 看答案呢？这样不会训练得更快吗？」</p>
+        <p>这个问题引出了 Transformer 架构里 <strong>Decoder-only</strong> 和 <strong>Encoder-only</strong> 的概念，以及「过拟合」的概念。这里简单概述：Decoder-only 只能看前面的词来猜测下一个内容；Encoder-only 则能够看到前后的词，来做「选词填空」。</p>
+        <p>我们可以把 AI 比喻成一个高中生：当 AI 做题的时候，旁边如果放了一本答案，AI 其实会自欺欺人——偷偷翻开答案看两眼，然后假装自己会了。模拟卷写得很好（Train Loss 很低），但面对考试的创新题就直接歇菜（Eval Loss 很高）。这样的训练方式会让 AI 变成一个「小镇做题家」。</p>
+
+        <figure style="margin: 1.6rem 0; text-align: center;">
+          <img src="../img/loss-overfit.png" alt="Train Loss 持续下降至很低，Eval Loss 先降后升，两条曲线在训练中后期分叉，形成明显的过拟合缺口" loading="lazy" style="width: 100%; max-width: 100%; border-radius: 10px; border: 1px solid rgba(128,128,128,0.25);">
+          <figcaption style="margin-top: 0.6rem; font-size: 0.88rem; opacity: 0.75;">「小镇做题家」式训练的典型曲线：Train Loss 一路降到接近 0（模拟卷越刷越熟），Eval Loss 却在中期触底反弹（创新题越考越差）——两条曲线的缺口就是过拟合。</figcaption>
+        </figure>
+        <p>所以，训练 AI 时通常采用 Decoder-only 的方式，让模型真正「靠自己」学会预测下一个词，以达到预期效果。</p>
+
+        <h2>三、文本传入大模型流程</h2>
+        <p>当我们和 LLM 聊天的时候，是否好奇过：「文本发出到 LLM 给出答案，这个过程是怎样的？」</p>
+        <div class="mermaid">
+flowchart LR
+    A["Context<br/>今天天气真好"]:::io --> B["Tokenization<br/>今天/天气/真好"]:::io --> C["Token Embedding<br/>词嵌入"]:::io --> D["LLM 计算"]:::core --> E["生成 Token"]:::io --> F["还原自然语言"]:::result
+    classDef io fill:#dbeafe,stroke:#2563eb,stroke-width:1.5px,color:#1e3a8a;
+    classDef core fill:#dcfce7,stroke:#16a34a,stroke-width:2.5px,color:#14532d;
+    classDef result fill:#ffedd5,stroke:#ea580c,stroke-width:2.5px,color:#7c2d12;
+        </div>
+        <p>文本输入很好理解，那后面几个流程该如何理解呢？依旧举个例子。当我输入「今天天气真好」：</p>
+        <ol>
+          <li><strong>Tokenization</strong> 会把句子切成一块一块的，如：今天 / 天气 / 真好</li>
+          <li>这时候的「词块」大模型看不懂，需要 <strong>Token Embedding</strong> 把它转换成模型能理解的语言（词嵌入）</li>
+          <li>随后交给 <strong>大模型计算</strong></li>
+          <li>大模型算完生成的东西（Token）我们人类看不懂，需要再<strong>还原成自然语言</strong>，答案才会出现在聊天框里</li>
+        </ol>
+        <p>整个过程就像两个人中间隔了两个翻译：你说的话要先「翻译成 AI 的话」，AI 回的话再「翻译回人话」——只不过这两位翻译的效率极高，你感觉不到他们的存在。</p>
+
+        <h2>写在最后</h2>
+        <blockquote>
+          伦理篇回答的是「AI 不该做什么」，机制篇回答的是「AI 为什么会这么做」。知道它怎么学、怎么想、怎么答，才谈得上真正地用好它、管住它。
+        </blockquote>
+      </div>
+    </article>
+  </div>
+
+  <footer>
+    <p> 2026 Rhine · Logic Junction X</p>
+  </footer>
+
+  <script>
+    function updateClock() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      const dateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+      document.getElementById('clock').textContent = dateStr + ' ' + hours + ':' + minutes + ':' + seconds;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+  </script>
+  <script src="../js/theme.js"></script>
+  <script type="module">
+    // Mermaid 流程图渲染（含明暗主题自适应）
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+
+    function currentTheme() {
+      return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default';
+    }
+
+    function renderMermaid() {
+      mermaid.initialize({ startOnLoad: false, theme: currentTheme() });
+      document.querySelectorAll('.mermaid').forEach(el => {
+        if (el.dataset.mmdSrc) { el.removeAttribute('data-processed'); el.innerHTML = el.dataset.mmdSrc; }
+        else { el.dataset.mmdSrc = el.innerHTML; }
+      });
+      mermaid.run({ querySelector: '.mermaid' });
+    }
+
+    document.addEventListener('DOMContentLoaded', renderMermaid);
+    // 监听主题切换，重绘流程图
+    new MutationObserver(renderMermaid).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  </script>
+</body>
+</html>
