@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>几乎不手写代码：我用"多 AI 协作"交付了一个比赛作品 - Rhine</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="../index.html" class="nav-logo">Rhine<span>.</span></a>
+      <div class="nav-links">
+        <a href="../index.html">首页</a>
+        <a href="../projects.html">项目</a>
+        <a href="../blog.html">博客</a>
+        <a href="../poetry.html">诗集</a>
+        <a href="../about.html">关于我</a>
+        <button class="theme-toggle" aria-label="切换主题">🌙</button>
+      </div>
+      <div class="clock" id="clock">--:--:--</div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <article class="article">
+      <h1>几乎不手写代码：我用"多 AI 协作"交付了一个比赛作品</h1>
+      <div class="article-meta">2026-10-14 · 项目复盘 · COSMO Code × RAG 校园助手</div>
+
+      <div class="article-content">
+        <p>这次比赛，我交出了一个完整的作品：RAG 校园助手——把学校十几份官方文档变成一个"能对话的知识库"。学生一句话提问，它检索、推理、给出答案，还标注来源。</p>
+        <p>但真正值得聊的不是作品，而是做它的过程：<strong>这次我几乎没有手写代码</strong>。我做的是写提示词、审查产物、做决策，具体干活的是两个 AI。</p>
+        <p>先亮结论：这套方法能成立的前提，是我手上本来就有一个成熟的项目。下面展开。</p>
+
+        <h2>一、起点：比赛要求用指定平台</h2>
+        <p>比赛规则很明确：作品必须基于 COSMO Code（卡奥斯的 AI 无代码开发平台）开发。这意味着我不能像以前那样本地写 Python 跑起来，而是要在一个"用自然语言描述需求、AI 生成应用"的平台里，从零搭出一个完整应用。</p>
+        <p>一开始我心里没底——"AI 生成的应用"能有多完整？后来发现：方法对了，它比想象中强得多。</p>
+
+        <h2>二、我的角色变了：从"写代码"到"做决策"</h2>
+        <p>传统开发里，我是执行者：写代码、调 bug、部署。</p>
+        <p>这次，我变成了<strong>决策者 + 质量把关者</strong>。分工是这样的：</p>
+        <ul>
+          <li>一个 AI（助手）：了解我项目的真实细节，帮我设计精准的提示词</li>
+          <li>一个 AI（平台）：接收提示词，生成应用代码、迭代优化</li>
+          <li>我：拆解目标、审查产物、判断对错、决定下一步</li>
+        </ul>
+        <p>关键在于：<strong>AI 负责"做"，我负责"判断做得对不对"</strong>。AI 很擅长生成，但它不知道"业务上什么才是对的"——那是人的价值。</p>
+
+        <h2>三、一个容易被忽略的前提：我手上有一个成熟的项目</h2>
+        <p>这里必须说清楚：我不是"从零让 AI 造一个应用"。</p>
+        <p>在此之前，我已经有一个成熟的自研项目——一套完整的 RAG 系统（本地 Python 版），知识库、检索逻辑、接口设计、功能规划都是现成的。它是我这次协作的<strong>参照物</strong>。</p>
+        <p>为什么这很重要？因为没有参照物的 AI 协作就是空想。你说"做个问答应用"，AI 只能猜你想要什么；但你说"照着我这个接口设计来做，请求体是 X、返回是 Y"，AI 就能精确产出。</p>
+        <p>我做的事，本质上是把成熟项目里的设计<strong>提取</strong>成提示词——接口契约、数据结构、功能边界，甚至之前踩过的坑，全都成了提示词的素材。</p>
+        <p>所以真正的公式是：</p>
+        <blockquote>成熟的设计（人的积累）+ 精准的提示词（转译）+ AI 的执行（生成）= 可控的产物</blockquote>
+        <p>AI 不会替你想清楚"做什么"，但它能极快地"把你已经想清楚的东西做出来"。前提是——你得先想清楚。</p>
+
+        <h2>四、提示词：必须"贴项目实际"</h2>
+        <p>我踩的第一个坑，就是提示词太泛。"帮我做个校园问答应用"——这种提示词生成的产物，跟真实需求差十万八千里。</p>
+        <p>后来我总结出：</p>
+        <blockquote>好提示词 = 任务结构 + 真实细节 + 验收标准</blockquote>
+        <ul>
+          <li><strong>任务结构</strong>：把大目标拆成清晰的步骤（先做界面 → 再导入知识库 → 再实现检索 → 最后优化体验）</li>
+          <li><strong>真实细节</strong>：把项目的接口契约、数据结构写进去。比如"调用 /chat 接口，请求体 {question}，返回 {answer, sources}"——AI 就不会乱造字段</li>
+          <li><strong>验收标准</strong>：每步写清"做完什么样算对"（如"问『食堂几点开门』应能答出具体时间"）</li>
+        </ul>
+        <p>细节越具体，返工越少。而细节从哪来？——从那个成熟项目里来。</p>
+
+        <h2>五、真正提效的是"反馈闭环"</h2>
+        <div class="mermaid">
+flowchart LR
+    A["成熟项目<br/>（本地 RAG 系统）"] --> B["提取设计要素<br/>（接口契约 / 数据结构 / 踩坑记录）"]
+    B --> C["AI 助手<br/>生成精准提示词"]
+    C --> D["COSMO Code 平台<br/>AI 生成应用"]
+    D --> E{"人：审查产物<br/>通过验收标准？"}
+    E -- "否：定位问题" --> F["反馈 + 改提示词"]
+    F -- "改完再生成" --> D
+    E -- "是" --> G["交付作品<br/>（可溯源 RAG 校园问答助手）"]
+
+    classDef human fill:#B5D4F4,stroke:#185FA5,color:#0C447C
+    classDef ai fill:#9FE1CB,stroke:#0F6E56,color:#085041
+    classDef key fill:#FAC775,stroke:#854F0B,color:#633806
+    class A,B,E,F human
+    class C,D ai
+    class G key
+        </div>
+        <p>单次提示词再准，也难一次到位。真正让效率起飞的是这个闭环：</p>
+        <blockquote>设计提示词 → 平台生成 → 审查产物 → 定位问题 → 改提示词 → 再生成（循环）</blockquote>
+        <p>举个例子。我让平台"在本平台内实现 RAG"，结果它做成了透传代理——后端只负责把请求转发到外部地址。方向就错了（比赛要求核心逻辑在平台内）。</p>
+        <p>我没直接改代码，而是回到提示词："不要做透传代理，请在本平台内部实现检索和生成"。它第二次就做对了。</p>
+        <p>"产物 → 反馈 → 改提示词"这个循环，比"一次性写完再说"高效得多——每轮都有产物可验收，错了立刻纠正，不会积累成大坑。</p>
+
+        <h2>六、几个真实的坑</h2>
+        <p><strong>坑一：AI 会"自造假数据"。</strong> 我让它生成前端时，它自己编了一套"食堂时段、心理咨询"的假知识库，界面上看着挺像，其实全是假的。这类"看起来对、其实没接真数据"的产物最危险——所以每步都要验证（真数据的答案是"学思楼 1"，假数据是"大学生活动中心 3 楼"，一问便知）。</p>
+        <p><strong>坑二：环境限制会咬人。</strong> 我加语音输入时，它依赖浏览器的语音服务，某些环境下就是不可用。动手前先确认环境能力，别做完了才发现跑不通。</p>
+        <p><strong>坑三：别被"好看的数字"骗了。</strong> 平台的自动化评测第一次跑出"100 分"——太完美，反而不真实。一查，它把"答错的题"当"技术故障"排除了，分数虚高。看到完美数据，先怀疑，再验证。</p>
+
+        <h2>七、这算 Meta Prompting 吗？</h2>
+        <p>我一开始以为这是 Meta Prompting（元提示）。但更准确地说，它包含四种模式：</p>
+        <ul>
+          <li><strong>Meta Prompting</strong>：提示词由 AI 生成</li>
+          <li><strong>Prompt Chaining（提示链）</strong>：大目标拆成多步</li>
+          <li><strong>Iterative Refinement（迭代精炼）</strong>：产物反馈再改</li>
+          <li><strong>Multi-Agent Collaboration（多智能体协作）</strong>：多个 AI 分工 + 人做决策</li>
+        </ul>
+        <p>所以更准确的名字是：<strong>人在环路的多 AI 协作（Human-in-the-loop Multi-Agent Collaboration）</strong>，Meta Prompting 只是其中一环。理清概念不只是为了表达准确，更是因为知道每种模式的边界，才能在对的场景用对的方法。</p>
+
+        <h2>八、总结</h2>
+        <p>这次经历让我对"AI 时代的开发"有了新认识：</p>
+        <ol>
+          <li><strong>人不会被替代，但角色会变</strong>——从"写代码"变成"定义问题、判断质量、做决策"</li>
+          <li><strong>前提是你得有积累</strong>——一个成熟的项目、一套想清楚的设计，才让 AI 协作有的放矢</li>
+          <li><strong>提示词是一门手艺</strong>——具体、结构化、带验收标准</li>
+          <li><strong>闭环 > 一次性</strong>——快速迭代、及时纠错，比"憋大招"高效</li>
+        </ol>
+        <p>最后，作品本身——一个能拆分复合问题、可溯源、会自评测的校园问答助手——顺利交付了。但比起作品，这套"和 AI 协作做东西"的方法，以及"先把项目做扎实、再用 AI 放大"这个顺序，才是更值钱的收获。</p>
+
+        <h2>写在最后</h2>
+        <blockquote>
+          焦虑没有用。练好判断力，学会指挥 AI 干活，比担心被它替代划算得多。
+        </blockquote>
+      </div>
+    </article>
+  </div>
+
+  <footer>
+    <p> 2026 Rhine · Logic Junction X</p>
+  </footer>
+
+  <script>
+    function updateClock() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      const dateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+      document.getElementById('clock').textContent = dateStr + ' ' + hours + ':' + minutes + ':' + seconds;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+  </script>
+  <script src="../js/theme.js"></script>
+  <script type="module">
+    // Mermaid 流程图渲染（含明暗主题自适应）
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+
+    function currentTheme() {
+      return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default';
+    }
+
+    function renderMermaid() {
+      mermaid.initialize({ startOnLoad: false, theme: currentTheme() });
+      document.querySelectorAll('.mermaid').forEach(el => {
+        if (el.dataset.mmdSrc) { el.removeAttribute('data-processed'); el.innerHTML = el.dataset.mmdSrc; }
+        else { el.dataset.mmdSrc = el.innerHTML; }
+      });
+      mermaid.run({ querySelector: '.mermaid' });
+    }
+
+    document.addEventListener('DOMContentLoaded', renderMermaid);
+    // 监听主题切换，重绘流程图
+    new MutationObserver(renderMermaid).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  </script>
+</body>
+</html>
