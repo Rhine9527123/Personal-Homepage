@@ -61,12 +61,14 @@
     }
     @keyframes blink { 50% { opacity: 0; } }
     .hero h1 {
-      font-size: clamp(26px, 5vw, 40px);
+      font-size: clamp(24px, 4.6vw, 36px);
       color: var(--green); font-weight: 700; letter-spacing: -0.5px;
-      margin: 18px 0 6px; min-height: 1.5em;
+      margin: 18px 0 26px; min-height: 1.5em;
       text-shadow: 0 0 24px rgba(0, 232, 148, 0.28);
     }
+    .hero h1 .cursor { width: 0.55em; height: 0.95em; margin-left: 4px; }
     .hero .sub { color: var(--txt-dim); font-size: 14px; margin-bottom: 26px; }
+    .hero .sub::before { content: '// '; color: var(--green-dim); }
     .hero .desc { max-width: 640px; color: var(--txt); margin-bottom: 34px; }
     .hero .desc b { color: var(--green); font-weight: 600; }
     .btn-row { display: flex; gap: 14px; flex-wrap: wrap; }
@@ -172,12 +174,12 @@
 
   <!-- Hero -->
   <div class="wrap hero">
-    <div class="prompt">$ <span class="cmd">whoami</span><span class="cursor"></span></div>
-    <h1 id="typed"></h1>
-    <div class="sub">Independent Developer · Logic Junction X</div>
+    <div class="prompt">$ <span class="cmd">whoami</span></div>
+    <h1><span id="typed"></span><span class="cursor"></span></h1>
+    <div class="sub">深圳信息职业技术大学 · 工业互联网专业 · AI 应用方向</div>
     <p class="desc">
       从大一开始独立做项目，搭建了一套完整的 <b>RAG 系统</b>。
-      正在探索 AI 在垂直行业的落地应用，用代码探索世界，用思考连接逻辑。
+      正在探索 AI 在垂直行业的落地应用。
     </p>
     <div class="btn-row">
       <a href="#projects" class="btn btn-solid">查看项目</a>
@@ -321,17 +323,25 @@
   </footer>
 
   <script>
-    // 打字机效果
-    const text = 'Independent Developer';
+    // 打字机循环：打出 → 停留 → 删除 → 下一条
+    const lines = ['Independent Developer', 'Rhine', 'Logic Junction X', '用代码探索世界，用思考连接逻辑'];
     const el = document.getElementById('typed');
-    let i = 0;
-    (function type() {
-      if (i <= text.length) {
-        el.textContent = text.slice(0, i);
-        i++;
-        setTimeout(type, 55);
+    let li = 0, ci = 0, deleting = false;
+    function tick() {
+      const cur = lines[li];
+      if (!deleting) {
+        ci++;
+        el.textContent = cur.slice(0, ci);
+        if (ci >= cur.length) { deleting = true; setTimeout(tick, 2000); return; }
+        setTimeout(tick, /[,，]/.test(cur[ci-1]) ? 260 : 90);
+      } else {
+        ci--;
+        el.textContent = cur.slice(0, ci);
+        if (ci <= 0) { deleting = false; li = (li + 1) % lines.length; setTimeout(tick, 420); return; }
+        setTimeout(tick, 38);
       }
-    })();
+    }
+    tick();
 
     // 时钟
     function updateClock() {
