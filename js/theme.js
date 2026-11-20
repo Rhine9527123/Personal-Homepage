@@ -1,12 +1,12 @@
 // 主题切换：默认浅色，切换到深色
 function toggleTheme() {
   var current = document.documentElement.getAttribute('data-theme');
-  if (current === 'dark') {
-    document.documentElement.removeAttribute('data-theme');
-    localStorage.setItem('theme', 'light');
-  } else {
+  if (current !== 'dark') {
     document.documentElement.setAttribute('data-theme', 'dark');
     localStorage.setItem('theme', 'dark');
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+    localStorage.setItem('theme', 'light');
   }
   updateIcon();
 }
@@ -20,9 +20,9 @@ function updateIcon() {
   }
 }
 
-// 初始化：读取 localStorage
+// 初始化：默认终端暗色（与首页一致），仅显式选过 light 才用浅色
 (function () {
-  if (localStorage.getItem('theme') === 'dark') {
+  if (localStorage.getItem('theme') !== 'light') {
     document.documentElement.setAttribute('data-theme', 'dark');
   }
 })();

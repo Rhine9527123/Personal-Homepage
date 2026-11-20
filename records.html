@@ -25,9 +25,8 @@
       display: block;
     }
     .category-card:hover {
-      transform: translateY(-4px);
       box-shadow: var(--shadow-hover);
-      border-color: rgba(37, 99, 235, 0.25);
+      border-color: var(--accent-2); transform: translateX(4px);
     }
     .category-icon {
       width: 48px;
@@ -40,12 +39,12 @@
       margin-bottom: 1.25rem;
     }
     .category-icon.notes-icon {
-      background: linear-gradient(135deg, rgba(37,99,235,0.1), rgba(124,58,237,0.1));
+      background: var(--accent-ghost); border: 1px solid var(--border);
       color: var(--accent);
     }
     .category-icon.screenshot-icon {
-      background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(6,182,212,0.1));
-      color: #10b981;
+      background: var(--accent-ghost); border: 1px dashed var(--border);
+      color: var(--accent);
     }
     .category-title {
       font-size: 1.15rem;
@@ -149,8 +148,8 @@
         <div class="category-icon screenshot-icon">&#128187;</div>
         <div class="category-title">运行截图</div>
         <div class="category-desc">代码调试、系统运行、Docker 部署等过程的截图记录</div>
-        <div class="category-count" style="color:#10b981;">即将添加</div>
-        <div class="category-arrow" style="color:#10b981;">敬请期待 &rarr;</div>
+        <div class="category-count" style="color:var(--text-muted);">即将添加</div>
+        <div class="category-arrow" style="color:var(--text-muted);">敬请期待 &rarr;</div>
       </a>
     </div>
   </div>
