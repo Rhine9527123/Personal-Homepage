@@ -367,19 +367,25 @@
       SPEED_MIN: 0.35,                      // 每帧(60fps基准)下落字数下限
       SPEED_MAX: 0.60,                      // 每帧下落字数上限
       TRAIL_LEN: 14,                        // 每列拖尾长度（格）
-      ALPHA_BODY_MIN: 0.10,                 // 常规字符透明度下限
-      ALPHA_BODY_MAX: 0.20,                 // 常规字符透明度上限
-      ALPHA_HEAD_MIN: 0.25,                 // 头部字符透明度下限
-      ALPHA_HEAD_MAX: 0.40,                 // 头部字符透明度上限
-      TRAIL_COLOR: 'rgba(6,10,8,0.06)',     // 拖影底色（页面实测底色 #060a08）
-      COLOR_DIM: '#00b573',                 // 次绿（页面实测 --green-dim）
-      COLOR_MAIN: '#00e894',                // 主绿（页面实测 --green）
-      GLOW_RADIUS: 220,                     // 鼠标光晕半径（px）
-      GLOW_ALPHA: 0.10,                     // 光晕中心透明度
-      NEAR_RADIUS: 180,                     // 邻近字符增亮/搅动半径（px）
-      NEAR_ALPHA_MAX: 0.55,                 // 邻近增亮上限
-      STIR_CHANCE: 0.08,                    // 邻近字符被"搅动"换字概率
-      BOOST_MAX: 0.5,                       // 流速扰动最大幅度（基准速度的50%）
+      ALPHA_BODY_MIN: 0.04,                 // 常规字符透明度下限
+      ALPHA_BODY_MAX: 0.07,                 // 常规字符透明度上限
+      ALPHA_HEAD_MIN: 0.09,                 // 头部字符透明度下限
+      ALPHA_HEAD_MAX: 0.13,                 // 头部字符透明度上限
+      TRAIL_COLOR: 'rgba(6,10,8,0.045)',    // 拖影底色（页面实测底色 #060a08）
+      COLOR_DIM: '#00b573',                 // 次绿（页面实测 --green-dim，常规字符用）
+      COLOR_MAIN: '#00e894',                // 主绿（页面实测 --green，仅头部/邻近增亮）
+      BRIGHT_HEAD_PCT: 0.15,                // 用主绿头部的列占比上限（≤15%）
+      FAR_PCT: 0.35,                        // "远处字符"降档比例（景深层）
+      FAR_DEPTH: 0.4,                       // 远处字符透明度乘数（再降一档）
+      GLOW_RADIUS: 200,                     // 鼠标光晕半径（px）
+      GLOW_ALPHA: 0.045,                    // 光晕中心透明度
+      GLOW_MID_POS: 0.4,                    // 三段渐隐中间停靠点
+      GLOW_MID_ALPHA: 0.02,                 // 三段渐隐中间透明度
+      NEAR_RADIUS: 160,                     // 邻近字符增亮/搅动半径（px）
+      NEAR_ALPHA_MAX: 0.22,                 // 邻近增亮上限（绝对值）
+      STIR_CHANCE: 0.05,                    // 邻近字符被"搅动"换字概率
+      BOOST_MAX: 0.4,                       // 流速扰动最大幅度（基准速度的40%）
+      INTENSITY: 0.5,                       // ★强度总闸：光晕/邻近增亮 alpha 全乘它，唯一全局亮度乘数
       EASE: 0.08,                           // 鼠标缓动插值系数
       STILL_MS: 600,                        // 鼠标静止多久后扰动开始衰减
       RESIZE_DEBOUNCE: 150,                 // resize 防抖（ms）
@@ -424,6 +430,8 @@
           x: i * colW,
           y: Math.random() * (H / rowH),
           speed: CONFIG.SPEED_MIN + Math.random() * (CONFIG.SPEED_MAX - CONFIG.SPEED_MIN),
+          far: Math.random() < CONFIG.FAR_PCT,            // 景深层：远处列透明度再降一档
+          brightHead: Math.random() < CONFIG.BRIGHT_HEAD_PCT, // ≤15% 的列用主绿头部
           cells: []
         });
       }
@@ -462,10 +470,11 @@
       ctx.fillStyle = CONFIG.TRAIL_COLOR;
       ctx.fillRect(0, 0, W, H);
 
-      // 光晕：径向渐变光斑
+      // 光晕：径向渐变光斑，三段渐隐，极淡（alpha × INTENSITY 总闸 × presence）
       if (presence > 0.01 && tx > 0) {
         var g = ctx.createRadialGradient(mx, my, 0, mx, my, CONFIG.GLOW_RADIUS);
-        g.addColorStop(0, 'rgba(0,232,148,' + (CONFIG.GLOW_ALPHA * presence).toFixed(3) + ')');
+        g.addColorStop(0, 'rgba(0,232,148,' + (CONFIG.GLOW_ALPHA * CONFIG.INTENSITY * presence).toFixed(4) + ')');
+        g.addColorStop(CONFIG.GLOW_MID_POS, 'rgba(0,232,148,' + (CONFIG.GLOW_MID_ALPHA * CONFIG.INTENSITY * presence).toFixed(4) + ')');
         g.addColorStop(1, 'rgba(0,232,148,0)');
         ctx.fillStyle = g;
         ctx.fillRect(mx - CONFIG.GLOW_RADIUS, my - CONFIG.GLOW_RADIUS,
@@ -496,10 +505,12 @@
         }
         if (headRow >= 0 && headRow < rows) {
           c.cells[headRow] = randChar();
-          // 头部字符（稍亮）
-          ctx.fillStyle = 'rgba(0,232,148,' +
-            (CONFIG.ALPHA_HEAD_MIN + Math.random() *
-             (CONFIG.ALPHA_HEAD_MAX - CONFIG.ALPHA_HEAD_MIN)).toFixed(2) + ')';
+          // 头部字符：≤15% 列用主绿，其余次绿；远处列再乘降档系数
+          var headA = (CONFIG.ALPHA_HEAD_MIN + Math.random() *
+             (CONFIG.ALPHA_HEAD_MAX - CONFIG.ALPHA_HEAD_MIN)) *
+             (c.far ? CONFIG.FAR_DEPTH : 1);
+          ctx.fillStyle = (c.brightHead ? 'rgba(0,232,148,' : 'rgba(0,181,115,') +
+            headA.toFixed(3) + ')';
           ctx.fillText(c.cells[headRow], c.x, headRow * rowH);
         }
         // 拖尾：常规字符（向上渐弱），只保留窗口内的格子
@@ -509,8 +520,9 @@
           var ch = c.cells[r2];
           if (ch === undefined) continue;
           var fade = 1 - t / (CONFIG.TRAIL_LEN + 1);
-          ctx.fillStyle = 'rgba(0,181,115,' +
-            ((CONFIG.ALPHA_BODY_MIN + (CONFIG.ALPHA_BODY_MAX - CONFIG.ALPHA_BODY_MIN) * fade)).toFixed(2) + ')';
+          var bodyA = (CONFIG.ALPHA_BODY_MIN + (CONFIG.ALPHA_BODY_MAX - CONFIG.ALPHA_BODY_MIN) * fade) *
+            (c.far ? CONFIG.FAR_DEPTH : 1);
+          ctx.fillStyle = 'rgba(0,181,115,' + bodyA.toFixed(3) + ')';
           ctx.fillText(ch, c.x, r2 * rowH);
           if (t < CONFIG.TRAIL_LEN) c.cells[r2] = undefined;
         }
@@ -536,9 +548,11 @@
             var dist = Math.sqrt(ddx * ddx + ddy * ddy);
             if (dist > R) continue;
             if (Math.random() < CONFIG.STIR_CHANCE * k) { ch2 = cc[ri] = randChar(); }
-            var lift = (1 - dist / R) * (CONFIG.NEAR_ALPHA_MAX - CONFIG.ALPHA_BODY_MAX);
-            ctx.fillStyle = 'rgba(106,229,155,' +
-              (CONFIG.ALPHA_BODY_MAX + lift).toFixed(2) + ')';
+            // 邻近增亮：目标从常规上限线性拉到 NEAR_ALPHA_MAX，alpha × INTENSITY 总闸
+            var nearA = Math.min(CONFIG.NEAR_ALPHA_MAX,
+              CONFIG.ALPHA_BODY_MAX + (1 - dist / R) *
+              (CONFIG.NEAR_ALPHA_MAX - CONFIG.ALPHA_BODY_MAX) * CONFIG.INTENSITY);
+            ctx.fillStyle = 'rgba(0,232,148,' + nearA.toFixed(3) + ')';
             ctx.fillText(ch2, cols[ci].x, ri * rowH);
           }
         }
