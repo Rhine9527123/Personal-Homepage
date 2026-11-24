@@ -391,6 +391,12 @@
     var CHARS = '0123456789ABCDEF{}[]()<>/*+-=;$#:_|\\';
     function randChar() { return CHARS[(Math.random() * CHARS.length) | 0]; }
 
+    // 只在“落笔”时绘制一次：逐帧重绘会与 0.045 拖影叠加，alpha 逐帧累积到接近不透明（亮绿字符墙）
+    function paintGlyph(c, row, ch, alpha, useMain) {
+      ctx.fillStyle = (useMain ? 'rgba(0,232,148,' : 'rgba(0,181,115,') + alpha.toFixed(3) + ')';
+      ctx.fillText(ch, c.x, row * rowH);
+    }
+
     var canvas = document.createElement('canvas');
     canvas.className = 'cr-bg-layer';
     canvas.setAttribute('style',
@@ -429,7 +435,8 @@
           speed: CONFIG.SPEED_MIN + Math.random() * (CONFIG.SPEED_MAX - CONFIG.SPEED_MIN),
           far: Math.random() < CONFIG.FAR_PCT,            // 景深层：远处列透明度再降一档
           brightHead: Math.random() < CONFIG.BRIGHT_HEAD_PCT, // ≤15% 的列用主绿头部
-          cells: []
+          cells: [],
+          lastRow: -999,                                  // 已落笔到的行（防止重复绘制）
         });
       }
       ctx.fillStyle = CONFIG.TRAIL_COLOR;
@@ -488,59 +495,56 @@
           c.y = -Math.random() * rows * 0.5;
           c.speed = CONFIG.SPEED_MIN + Math.random() * (CONFIG.SPEED_MAX - CONFIG.SPEED_MIN);
           c.cells.length = 0;
+          c.lastRow = -999;
           continue;
         }
-        if (headRow >= 0 && headRow < rows) {
-          c.cells[headRow] = randChar();
-          // 头部字符：≤15% 列用主绿，其余次绿；远处列再乘降档系数
-          var headA = (CONFIG.ALPHA_HEAD_MIN + Math.random() *
-             (CONFIG.ALPHA_HEAD_MAX - CONFIG.ALPHA_HEAD_MIN)) *
-             (c.far ? CONFIG.FAR_DEPTH : 1);
-          ctx.fillStyle = (c.brightHead ? 'rgba(0,232,148,' : 'rgba(0,181,115,') +
-            headA.toFixed(3) + ')';
-          ctx.fillText(c.cells[headRow], c.x, headRow * rowH);
-        }
-        // 拖尾：常规字符（向上渐弱），只保留窗口内的格子
-        for (var t = 1; t <= CONFIG.TRAIL_LEN; t++) {
-          var r2 = headRow - t;
-          if (r2 < 0) break;
-          var ch = c.cells[r2];
-          if (ch === undefined) continue;
-          var fade = 1 - t / (CONFIG.TRAIL_LEN + 1);
-          var bodyA = (CONFIG.ALPHA_BODY_MIN + (CONFIG.ALPHA_BODY_MAX - CONFIG.ALPHA_BODY_MIN) * fade) *
-            (c.far ? CONFIG.FAR_DEPTH : 1);
-          ctx.fillStyle = 'rgba(0,181,115,' + bodyA.toFixed(3) + ')';
-          ctx.fillText(ch, c.x, r2 * rowH);
-          if (t < CONFIG.TRAIL_LEN) c.cells[r2] = undefined;
-        }
-        if (headRow - CONFIG.TRAIL_LEN - 1 >= 0) {
-          c.cells[headRow - CONFIG.TRAIL_LEN - 1] = undefined;
+        // 落笔：每跨过一个新行只写一次字符，之后交给拖影自然衰减（绝不逐帧重绘）
+        if (headRow !== c.lastRow && headRow >= 0) {
+          var fromRow = Math.max(0, c.lastRow + 1);
+          var toRow = Math.min(headRow, rows - 1);
+          for (var rr = fromRow; rr <= toRow; rr++) {
+            var ch = randChar();
+            c.cells[rr] = ch;
+            var baseA = (CONFIG.ALPHA_HEAD_MIN + Math.random() *
+              (CONFIG.ALPHA_HEAD_MAX - CONFIG.ALPHA_HEAD_MIN)) *
+              (c.far ? CONFIG.FAR_DEPTH : 1);
+            var useMain = c.brightHead;
+            // 邻近增亮：在落笔瞬间按与鼠标的距离提升 alpha（不逐帧重绘，避免累积成亮区）
+            if (presence > 0.05 && mouseIn) {
+              var nddx = (c.x + colW / 2) - mx;
+              var nddy = rr * rowH + rowH / 2 - my;
+              var ndist = Math.sqrt(nddx * nddx + nddy * nddy);
+              if (ndist < CONFIG.NEAR_RADIUS) {
+                baseA = Math.min(CONFIG.NEAR_ALPHA_MAX,
+                  baseA + (1 - ndist / CONFIG.NEAR_RADIUS) *
+                  (CONFIG.NEAR_ALPHA_MAX - baseA) * CONFIG.INTENSITY);
+                useMain = true;
+              }
+            }
+            paintGlyph(c, rr, ch, baseA, useMain);
+          }
+          c.lastRow = headRow;
+          var cutRow = headRow - CONFIG.TRAIL_LEN - 2;
+          if (cutRow >= 0) c.cells[cutRow] = undefined;
         }
       }
 
-      // 邻近增亮 + 搅动（唯一的视觉反馈；坐标为 canvas 绘图空间 = CSS 像素）
-      if (presence > 0.05 && mouseIn) {
+      // 搅动：低频换字（只重绘被换的那一格，alpha 取低值 → 不累积、不形成固定亮区）
+      if (presence > 0.05 && mouseIn && Math.random() < CONFIG.STIR_CHANCE * k) {
         var R = CONFIG.NEAR_RADIUS;
         var c0 = Math.max(0, Math.floor((mx - R) / colW));
         var c1 = Math.min(cols.length - 1, Math.ceil((mx + R) / colW));
         var r0 = Math.max(0, Math.floor((my - R) / rowH));
-        var r1 = Math.min(rows, Math.ceil((my + R) / rowH));
-        for (var ci = c0; ci <= c1; ci++) {
-          var cc = cols[ci].cells;
-          for (var ri = r0; ri < r1; ri++) {
-            var ch2 = cc[ri];
-            if (ch2 === undefined) continue;
-            var ddx = (cols[ci].x + colW / 2) - mx;
-            var ddy = ri * rowH + rowH / 2 - my;
-            var dist = Math.sqrt(ddx * ddx + ddy * ddy);
-            if (dist > R) continue;
-            if (Math.random() < CONFIG.STIR_CHANCE * k) { ch2 = cc[ri] = randChar(); }
-            // 邻近增亮：目标从常规上限线性拉到 NEAR_ALPHA_MAX，alpha × INTENSITY 总闸
-            var nearA = Math.min(CONFIG.NEAR_ALPHA_MAX,
-              CONFIG.ALPHA_BODY_MAX + (1 - dist / R) *
-              (CONFIG.NEAR_ALPHA_MAX - CONFIG.ALPHA_BODY_MAX) * CONFIG.INTENSITY);
-            ctx.fillStyle = 'rgba(0,232,148,' + nearA.toFixed(3) + ')';
-            ctx.fillText(ch2, cols[ci].x, ri * rowH);
+        var r1 = Math.min(rows - 1, Math.ceil((my + R) / rowH));
+        var ci = c0 + Math.floor(Math.random() * (c1 - c0 + 1));
+        var ri = r0 + Math.floor(Math.random() * (r1 - r0 + 1));
+        var col = cols[ci];
+        if (col && col.cells[ri] !== undefined) {
+          var sdx = (col.x + colW / 2) - mx;
+          var sdy = ri * rowH + rowH / 2 - my;
+          if (Math.sqrt(sdx * sdx + sdy * sdy) < R) {
+            col.cells[ri] = randChar();
+            paintGlyph(col, ri, col.cells[ri], CONFIG.ALPHA_BODY_MAX, true);
           }
         }
       }
