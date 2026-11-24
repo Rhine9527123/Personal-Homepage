@@ -377,15 +377,11 @@
       BRIGHT_HEAD_PCT: 0.15,                // 用主绿头部的列占比上限（≤15%）
       FAR_PCT: 0.35,                        // "远处字符"降档比例（景深层）
       FAR_DEPTH: 0.4,                       // 远处字符透明度乘数（再降一档）
-      GLOW_RADIUS: 200,                     // 鼠标光晕半径（px）
-      GLOW_ALPHA: 0.045,                    // 光晕中心透明度
-      GLOW_MID_POS: 0.4,                    // 三段渐隐中间停靠点
-      GLOW_MID_ALPHA: 0.02,                 // 三段渐隐中间透明度
       NEAR_RADIUS: 160,                     // 邻近字符增亮/搅动半径（px）
       NEAR_ALPHA_MAX: 0.22,                 // 邻近增亮上限（绝对值）
       STIR_CHANCE: 0.05,                    // 邻近字符被"搅动"换字概率
       BOOST_MAX: 0.4,                       // 流速扰动最大幅度（基准速度的40%）
-      INTENSITY: 0.5,                       // ★强度总闸：光晕/邻近增亮 alpha 全乘它，唯一全局亮度乘数
+      INTENSITY: 0.5,                       // ★强度总闸：邻近增亮 alpha 乘它，唯一全局亮度乘数
       EASE: 0.08,                           // 鼠标缓动插值系数
       STILL_MS: 600,                        // 鼠标静止多久后扰动开始衰减
       RESIZE_DEBOUNCE: 150,                 // resize 防抖（ms）
@@ -412,6 +408,7 @@
     var fineMouse = window.matchMedia && window.matchMedia('(pointer: fine)').matches;
     var mx = -9999, my = -9999, tx = -9999, ty = -9999;
     var presence = 0, impact = 0, lastMove = 0;
+    var mouseIn = false;
 
     function build() {
       dpr = Math.max(1, window.devicePixelRatio || 1);
@@ -458,36 +455,26 @@
       var dt = Math.min(now - lastT, 100); lastT = now;
       var k = dt / 16.667; // 帧率归一：高刷屏/切回标签页都不会加速
 
-      // 鼠标缓动逼近 + 静止衰减 + 光晕出现度
-      if (presence > 0 || tx > 0) {
+      // 鼠标缓动逼近 + 扰动衰减（离开窗口后平滑归零，不留固定亮区）
+      if (presence > 0.001 || mouseIn) {
         mx += (tx - mx) * CONFIG.EASE;
         my += (ty - my) * CONFIG.EASE;
-        if (now - lastMove > CONFIG.STILL_MS) impact *= Math.pow(0.94, k);
+        if (mouseIn && now - lastMove > CONFIG.STILL_MS) impact *= Math.pow(0.94, k);
+        if (!mouseIn) impact *= Math.pow(0.92, k);
       }
-      presence += ((tx > 0 ? 1 : 0) - presence) * 0.06 * k;
+      presence += ((mouseIn ? 1 : 0) - presence) * 0.06 * k;
 
       // 余晖一遍过（不清屏）
       ctx.fillStyle = CONFIG.TRAIL_COLOR;
       ctx.fillRect(0, 0, W, H);
 
-      // 光晕：径向渐变光斑，三段渐隐，极淡（alpha × INTENSITY 总闸 × presence）
-      if (presence > 0.01 && tx > 0) {
-        var g = ctx.createRadialGradient(mx, my, 0, mx, my, CONFIG.GLOW_RADIUS);
-        g.addColorStop(0, 'rgba(0,232,148,' + (CONFIG.GLOW_ALPHA * CONFIG.INTENSITY * presence).toFixed(4) + ')');
-        g.addColorStop(CONFIG.GLOW_MID_POS, 'rgba(0,232,148,' + (CONFIG.GLOW_MID_ALPHA * CONFIG.INTENSITY * presence).toFixed(4) + ')');
-        g.addColorStop(1, 'rgba(0,232,148,0)');
-        ctx.fillStyle = g;
-        ctx.fillRect(mx - CONFIG.GLOW_RADIUS, my - CONFIG.GLOW_RADIUS,
-                     CONFIG.GLOW_RADIUS * 2, CONFIG.GLOW_RADIUS * 2);
-      }
-
-      // 字符流
+      // 字符流（无任何发光体：只改字符亮度与速度，不加图层/形状）
       var rows = Math.ceil(H / rowH);
       for (var i = 0; i < cols.length; i++) {
         var c = cols[i];
-        // 流向偏转：鼠标附近列加速（幅度 ≤ 基准50%），随 impact 衰减
+        // 流向偏转：鼠标附近列加速（幅度 ≤ 基准40%），随 impact 衰减
         var boost = 0;
-        if (impact > 0.01 && tx > 0) {
+        if (impact > 0.01 && presence > 0.001) {
           var dx = Math.abs(c.x + colW / 2 - mx);
           if (dx < CONFIG.NEAR_RADIUS) {
             boost = impact * (1 - dx / CONFIG.NEAR_RADIUS) * CONFIG.BOOST_MAX;
@@ -531,8 +518,8 @@
         }
       }
 
-      // 邻近增亮 + 搅动（只在鼠标在场时）
-      if (presence > 0.05 && tx > 0) {
+      // 邻近增亮 + 搅动（唯一的视觉反馈；坐标为 canvas 绘图空间 = CSS 像素）
+      if (presence > 0.05 && mouseIn) {
         var R = CONFIG.NEAR_RADIUS;
         var c0 = Math.max(0, Math.floor((mx - R) / colW));
         var c1 = Math.min(cols.length - 1, Math.ceil((mx + R) / colW));
@@ -583,13 +570,21 @@
 
     if (fineMouse) {
       window.addEventListener('mousemove', function (e) {
-        if (tx < 0) { mx = e.clientX; my = e.clientY; } // 首次进入不缓动跳变
-        tx = e.clientX; ty = e.clientY;
+        // 坐标换算（硬要求③）：clientX/Y → canvas 内坐标
+        // 减 getBoundingClientRect() 偏移；DPR 由 ctx.setTransform(dpr) 统一处理，
+        // 绘图空间即 CSS 像素，此处不再乘 DPR（否则双重缩放导致偏移）
+        var rect = canvas.getBoundingClientRect();
+        var nx = e.clientX - rect.left, ny = e.clientY - rect.top;
+        if (!mouseIn) {
+          mouseIn = true;
+          if (tx < 0) { mx = nx; my = ny; } // 首次进入不缓动跳变
+        }
+        tx = nx; ty = ny;
         impact = Math.min(1, impact + 0.15);
         lastMove = performance.now();
       }, { passive: true });
       document.documentElement.addEventListener('mouseleave', function () {
-        tx = -9999; ty = -9999; impact = 0; // 光晕淡出、扰动归零
+        mouseIn = false; // presence/impact 平滑衰减归零，不留残影
       });
     }
 
