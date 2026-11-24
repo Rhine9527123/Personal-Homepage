@@ -353,5 +353,237 @@
     updateClock();
     setInterval(updateClock, 1000);
   </script>
+
+  <!-- ===== CODE-RAIN BG: START (可整段删除以回滚) ===== -->
+  <script>
+  (function () {
+    'use strict';
+
+    /* ---------- CONFIG：调参数改这里 ---------- */
+    var CONFIG = {
+      FONT_SIZE: 14,                        // 字符字号（px），建议 12-16
+      COL_W_RATIO: 1.1,                     // 列宽 = 字号 × 此值
+      ROW_H_RATIO: 1.15,                    // 行高 = 字号 × 此值
+      SPEED_MIN: 0.35,                      // 每帧(60fps基准)下落字数下限
+      SPEED_MAX: 0.60,                      // 每帧下落字数上限
+      TRAIL_LEN: 14,                        // 每列拖尾长度（格）
+      ALPHA_BODY_MIN: 0.10,                 // 常规字符透明度下限
+      ALPHA_BODY_MAX: 0.20,                 // 常规字符透明度上限
+      ALPHA_HEAD_MIN: 0.25,                 // 头部字符透明度下限
+      ALPHA_HEAD_MAX: 0.40,                 // 头部字符透明度上限
+      TRAIL_COLOR: 'rgba(6,10,8,0.06)',     // 拖影底色（页面实测底色 #060a08）
+      COLOR_DIM: '#00b573',                 // 次绿（页面实测 --green-dim）
+      COLOR_MAIN: '#00e894',                // 主绿（页面实测 --green）
+      GLOW_RADIUS: 220,                     // 鼠标光晕半径（px）
+      GLOW_ALPHA: 0.10,                     // 光晕中心透明度
+      NEAR_RADIUS: 180,                     // 邻近字符增亮/搅动半径（px）
+      NEAR_ALPHA_MAX: 0.55,                 // 邻近增亮上限
+      STIR_CHANCE: 0.08,                    // 邻近字符被"搅动"换字概率
+      BOOST_MAX: 0.5,                       // 流速扰动最大幅度（基准速度的50%）
+      EASE: 0.08,                           // 鼠标缓动插值系数
+      STILL_MS: 600,                        // 鼠标静止多久后扰动开始衰减
+      RESIZE_DEBOUNCE: 150,                 // resize 防抖（ms）
+      MOBILE_WIDTH: 768                     // 低于此宽度降级为静态纹理
+    };
+
+    var CHARS = '0123456789ABCDEF{}[]()<>/*+-=;$#:_|\\';
+    function randChar() { return CHARS[(Math.random() * CHARS.length) | 0]; }
+
+    var canvas = document.createElement('canvas');
+    canvas.className = 'cr-bg-layer';
+    canvas.setAttribute('style',
+      'position:fixed;inset:0;z-index:-1;pointer-events:none;background:transparent;');
+    document.body.insertBefore(canvas, document.body.firstChild);
+    var ctx = canvas.getContext('2d');
+
+    var reduced = window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var dpr = Math.max(1, window.devicePixelRatio || 1);
+    var W = 0, H = 0, colW = 0, rowH = 0, cols = [];
+    var raf = null, lastT = 0, resizeTimer = null;
+
+    // 鼠标状态（触摸设备不启用）
+    var fineMouse = window.matchMedia && window.matchMedia('(pointer: fine)').matches;
+    var mx = -9999, my = -9999, tx = -9999, ty = -9999;
+    var presence = 0, impact = 0, lastMove = 0;
+
+    function build() {
+      dpr = Math.max(1, window.devicePixelRatio || 1);
+      W = window.innerWidth; H = window.innerHeight;
+      canvas.width = Math.round(W * dpr);
+      canvas.height = Math.round(H * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.font = CONFIG.FONT_SIZE + 'px ui-monospace, "SF Mono", Menlo, Consolas, monospace';
+      ctx.textBaseline = 'top';
+      colW = CONFIG.FONT_SIZE * CONFIG.COL_W_RATIO;
+      rowH = CONFIG.FONT_SIZE * CONFIG.ROW_H_RATIO;
+      var n = Math.max(1, Math.ceil(W / colW));
+      cols = [];
+      for (var i = 0; i < n; i++) {
+        cols.push({
+          x: i * colW,
+          y: Math.random() * (H / rowH),
+          speed: CONFIG.SPEED_MIN + Math.random() * (CONFIG.SPEED_MAX - CONFIG.SPEED_MIN),
+          cells: []
+        });
+      }
+      ctx.fillStyle = CONFIG.TRAIL_COLOR;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    function drawStatic() { // 静态纹理帧（reduced-motion / 窄屏）
+      build();
+      for (var i = 0; i < cols.length; i += 1) {
+        for (var r = 0; r < H / rowH; r++) {
+          if (Math.random() < 0.06) {
+            ctx.fillStyle = 'rgba(0,181,115,' +
+              (CONFIG.ALPHA_BODY_MIN + Math.random() *
+               (CONFIG.ALPHA_BODY_MAX - CONFIG.ALPHA_BODY_MIN)).toFixed(2) + ')';
+            ctx.fillText(randChar(), cols[i].x, r * rowH);
+          }
+        }
+      }
+    }
+
+    function frame(now) {
+      raf = requestAnimationFrame(frame);
+      var dt = Math.min(now - lastT, 100); lastT = now;
+      var k = dt / 16.667; // 帧率归一：高刷屏/切回标签页都不会加速
+
+      // 鼠标缓动逼近 + 静止衰减 + 光晕出现度
+      if (presence > 0 || tx > 0) {
+        mx += (tx - mx) * CONFIG.EASE;
+        my += (ty - my) * CONFIG.EASE;
+        if (now - lastMove > CONFIG.STILL_MS) impact *= Math.pow(0.94, k);
+      }
+      presence += ((tx > 0 ? 1 : 0) - presence) * 0.06 * k;
+
+      // 余晖一遍过（不清屏）
+      ctx.fillStyle = CONFIG.TRAIL_COLOR;
+      ctx.fillRect(0, 0, W, H);
+
+      // 光晕：径向渐变光斑
+      if (presence > 0.01 && tx > 0) {
+        var g = ctx.createRadialGradient(mx, my, 0, mx, my, CONFIG.GLOW_RADIUS);
+        g.addColorStop(0, 'rgba(0,232,148,' + (CONFIG.GLOW_ALPHA * presence).toFixed(3) + ')');
+        g.addColorStop(1, 'rgba(0,232,148,0)');
+        ctx.fillStyle = g;
+        ctx.fillRect(mx - CONFIG.GLOW_RADIUS, my - CONFIG.GLOW_RADIUS,
+                     CONFIG.GLOW_RADIUS * 2, CONFIG.GLOW_RADIUS * 2);
+      }
+
+      // 字符流
+      var rows = Math.ceil(H / rowH);
+      for (var i = 0; i < cols.length; i++) {
+        var c = cols[i];
+        // 流向偏转：鼠标附近列加速（幅度 ≤ 基准50%），随 impact 衰减
+        var boost = 0;
+        if (impact > 0.01 && tx > 0) {
+          var dx = Math.abs(c.x + colW / 2 - mx);
+          if (dx < CONFIG.NEAR_RADIUS) {
+            boost = impact * (1 - dx / CONFIG.NEAR_RADIUS) * CONFIG.BOOST_MAX;
+          }
+        }
+        c.y += c.speed * (1 + boost) * k;
+
+        var headRow = Math.floor(c.y);
+        if (headRow > rows + CONFIG.TRAIL_LEN) {
+          // 一列落完：重置到顶部上方随机位置，换速度
+          c.y = -Math.random() * rows * 0.5;
+          c.speed = CONFIG.SPEED_MIN + Math.random() * (CONFIG.SPEED_MAX - CONFIG.SPEED_MIN);
+          c.cells.length = 0;
+          continue;
+        }
+        if (headRow >= 0 && headRow < rows) {
+          c.cells[headRow] = randChar();
+          // 头部字符（稍亮）
+          ctx.fillStyle = 'rgba(0,232,148,' +
+            (CONFIG.ALPHA_HEAD_MIN + Math.random() *
+             (CONFIG.ALPHA_HEAD_MAX - CONFIG.ALPHA_HEAD_MIN)).toFixed(2) + ')';
+          ctx.fillText(c.cells[headRow], c.x, headRow * rowH);
+        }
+        // 拖尾：常规字符（向上渐弱），只保留窗口内的格子
+        for (var t = 1; t <= CONFIG.TRAIL_LEN; t++) {
+          var r2 = headRow - t;
+          if (r2 < 0) break;
+          var ch = c.cells[r2];
+          if (ch === undefined) continue;
+          var fade = 1 - t / (CONFIG.TRAIL_LEN + 1);
+          ctx.fillStyle = 'rgba(0,181,115,' +
+            ((CONFIG.ALPHA_BODY_MIN + (CONFIG.ALPHA_BODY_MAX - CONFIG.ALPHA_BODY_MIN) * fade)).toFixed(2) + ')';
+          ctx.fillText(ch, c.x, r2 * rowH);
+          if (t < CONFIG.TRAIL_LEN) c.cells[r2] = undefined;
+        }
+        if (headRow - CONFIG.TRAIL_LEN - 1 >= 0) {
+          c.cells[headRow - CONFIG.TRAIL_LEN - 1] = undefined;
+        }
+      }
+
+      // 邻近增亮 + 搅动（只在鼠标在场时）
+      if (presence > 0.05 && tx > 0) {
+        var R = CONFIG.NEAR_RADIUS;
+        var c0 = Math.max(0, Math.floor((mx - R) / colW));
+        var c1 = Math.min(cols.length - 1, Math.ceil((mx + R) / colW));
+        var r0 = Math.max(0, Math.floor((my - R) / rowH));
+        var r1 = Math.min(rows, Math.ceil((my + R) / rowH));
+        for (var ci = c0; ci <= c1; ci++) {
+          var cc = cols[ci].cells;
+          for (var ri = r0; ri < r1; ri++) {
+            var ch2 = cc[ri];
+            if (ch2 === undefined) continue;
+            var ddx = (cols[ci].x + colW / 2) - mx;
+            var ddy = ri * rowH + rowH / 2 - my;
+            var dist = Math.sqrt(ddx * ddx + ddy * ddy);
+            if (dist > R) continue;
+            if (Math.random() < CONFIG.STIR_CHANCE * k) { ch2 = cc[ri] = randChar(); }
+            var lift = (1 - dist / R) * (CONFIG.NEAR_ALPHA_MAX - CONFIG.ALPHA_BODY_MAX);
+            ctx.fillStyle = 'rgba(106,229,155,' +
+              (CONFIG.ALPHA_BODY_MAX + lift).toFixed(2) + ')';
+            ctx.fillText(ch2, cols[ci].x, ri * rowH);
+          }
+        }
+      }
+    }
+
+    function start() {
+      if (raf !== null) return;      // 单循环实例保护
+      lastT = performance.now();
+      raf = requestAnimationFrame(frame);
+    }
+    function stop() {
+      if (raf !== null) { cancelAnimationFrame(raf); raf = null; }
+    }
+
+    window.addEventListener('resize', function () {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(function () {
+        if (reduced || window.innerWidth < CONFIG.MOBILE_WIDTH) { stop(); drawStatic(); }
+        else { build(); if (raf === null) start(); }
+      }, CONFIG.RESIZE_DEBOUNCE);
+    });
+
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'hidden') { stop(); }
+      else if (!reduced && window.innerWidth >= CONFIG.MOBILE_WIDTH) { start(); }
+    });
+
+    if (fineMouse) {
+      window.addEventListener('mousemove', function (e) {
+        if (tx < 0) { mx = e.clientX; my = e.clientY; } // 首次进入不缓动跳变
+        tx = e.clientX; ty = e.clientY;
+        impact = Math.min(1, impact + 0.15);
+        lastMove = performance.now();
+      }, { passive: true });
+      document.documentElement.addEventListener('mouseleave', function () {
+        tx = -9999; ty = -9999; impact = 0; // 光晕淡出、扰动归零
+      });
+    }
+
+    // 启动：reduced-motion 或窄屏 → 单帧静态纹理
+    if (reduced || window.innerWidth < CONFIG.MOBILE_WIDTH) { drawStatic(); }
+    else { build(); start(); }
+  })();
+  </script>
+  <!-- ===== CODE-RAIN BG: END ===== -->
 </body>
 </html>
